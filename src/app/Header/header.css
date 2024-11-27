@@ -1,0 +1,111 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background-color: #000; /* Black background */
+    color: #fff; /* White text color */
+    font-family: 'Alata', sans-serif;  }
+
+    .custom-logo {
+      text-decoration: none;
+      font-family: 'Oxanium', sans-serif;
+      font-size: 2rem;
+      /* Adjust size */
+      font-weight: bold;
+      /* Bold font */
+      color: #ff3bff;
+      /* Custom color */
+      background: linear-gradient(90deg,
+          #ff3bff,
+          #ecbfbf,
+          #5c24ff,
+          #5c24ff);
+      /* Gradient color */
+      background-clip: text;
+      /* Clip gradient to text */
+      -webkit-background-clip: text;
+      /* Safari support */
+      color: transparent;
+      /* Make rest of text transparent */
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      /* Optional shadow */
+    }
+  
+    .custom-logo:hover {
+      color: transparent;
+      /* Retain transparency */
+      text-shadow: 3px 3px 8px rgba(92, 36, 255, 0.5);
+      /* Glow on hover */
+      transform: scale(1.05);
+      /* Slight enlargement */
+      transition: all 0.3s ease;
+      /* Smooth transition */
+    }
+  
+  .logo { 
+    font-size: 1.5rem !important; 
+    font-weight: bold !important;
+    text-decoration: none;
+  }
+  
+  .nav {
+    display: flex;
+    gap: 30px;
+  }
+  
+  .nav a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 1rem;
+    transition: color 0.3s;
+
+  }
+  
+  .nav a:hover {
+    color: #d3d3d3; /* Lighter color on hover */
+    text-decoration: none;
+  }
+
+  /* Outer Gradient Wrapper */
+.button-container {
+    display: inline-block; /* Tight wrapper around the content */
+    border-radius: 40px; /* Rounded corners for gradient border */
+    padding: 2px; /* Thickness of gradient border */
+    background: linear-gradient(
+      to right,
+      #ff3bff 0%,
+      #ecbfbf 38%,
+      #5c24ff 76%,
+      #d94fd5 100%
+    ); /* Gradient border */
+  }
+  
+  /* Inner Button Wrapper */
+  .wallet-button {
+    border-radius: 40px; /* Matches outer container for seamless look */
+    overflow: hidden; /* Ensures button respects border radius */
+  }
+  
+  /* Actual Button */
+  .wallet-button button {
+    color: #fff;
+    padding: 10px 30px;
+    background: #000; /* Black background */
+    border: none; /* No default border */
+    border-radius: 40px; /* Matches container for smooth corners */
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.3s;
+  }
+  
+  /* Button Hover Effect */
+  .wallet-button button:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.3); /* Subtle glow */
+  }
+  
+  .nav-link {
+    cursor: hand;
+  }
