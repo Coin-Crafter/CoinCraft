@@ -26,8 +26,10 @@ const Content = () => (
         </div>
       </div> */}
 
-      <div className="white-border-button-wrapper">
-        <button className="white-border-button">Find a Project</button>
+      <div className="button-solid-wrapper">
+        <div className="button-inner-wrapper">
+          <button className="gradient-button">Find a Project</button>
+        </div>
       </div>
     </div>
     <img className="content-image" src={process.env.PUBLIC_URL + '/asset/contentImage.png'} alt="Content" />

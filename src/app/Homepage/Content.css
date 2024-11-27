@@ -44,6 +44,13 @@
   );
 }
 
+.button-solid-wrapper {
+  display: inline-block; /* Wrap tightly around content */
+  border-radius: 40px; /* Rounded gradient border */
+  padding: 2px; /* Border thickness */
+  background: white;
+}
+
 /* Inner Button Wrapper */
 .button-inner-wrapper {
   border-radius: 40px;
@@ -53,7 +60,7 @@
 /* Gradient Button */
 .gradient-button {
   color: #fff;
-  padding: 10px 30px;
+  padding: 17px 40px;
   background: #000; /* Black inner background */
   border: none;
   border-radius: 40px;
