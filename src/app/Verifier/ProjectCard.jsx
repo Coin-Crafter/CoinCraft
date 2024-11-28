@@ -1,5 +1,5 @@
 import React from "react";
-import "./listing.css"; // Import styles
+import "./verifier.css"; // Import styles
 
 function ProjectCard({ title, description, stipend }) {
   return (
@@ -25,7 +25,7 @@ function ProjectCard({ title, description, stipend }) {
       
         <div className="button-gradient-wrapper">
         <div className="button-inner-wrapper">
-          <button className="gradient-button">Remove Project</button>
+          <button className="gradient-button">Choose to Verify</button>
         </div>
       </div>
 

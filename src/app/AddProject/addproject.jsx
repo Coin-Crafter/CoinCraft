@@ -1,8 +1,7 @@
 import React from "react";
-import ProjectCard from "./ProjectCard"; // Import card component
-import "./listing.css"; // Import styles
-
-function Listing() {
+import "./addproject.css"; // Import styles
+import ProjectCard from "../Listing/ProjectCard"; // Import card component
+function Add() {
   const projects = [
     {
       title: "Project 1",
@@ -26,6 +25,7 @@ function Listing() {
 
   return (
     <div className="listing-page">
+        <button className="add-project-button">Add Project</button>
       <div className="listing-header">
         <h1>Projects You Have Listed</h1>
       </div>
@@ -39,8 +39,10 @@ function Listing() {
           />
         ))}
       </div>
+      
+      
     </div>
   );
 }
 
-export default Listing;
+export default Add;

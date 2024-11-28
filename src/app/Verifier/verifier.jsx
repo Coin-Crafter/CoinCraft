@@ -1,8 +1,7 @@
 import React from "react";
+import "./verifier.css"; // Import styles
 import ProjectCard from "./ProjectCard"; // Import card component
-import "./listing.css"; // Import styles
-
-function Listing() {
+function Verify() {
   const projects = [
     {
       title: "Project 1",
@@ -27,7 +26,7 @@ function Listing() {
   return (
     <div className="listing-page">
       <div className="listing-header">
-        <h1>Projects You Have Listed</h1>
+        <h1>Join as a Verifier?</h1>
       </div>
       <div className="project-grid">
         {projects.map((project, index) => (
@@ -43,4 +42,4 @@ function Listing() {
   );
 }
 
-export default Listing;
+export default Verify;
