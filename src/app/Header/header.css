@@ -65,6 +65,7 @@
   .nav a:hover {
     color: #d3d3d3; /* Lighter color on hover */
     text-decoration: none;
+    text-decoration-line: underline;
   }
 
   /* Outer Gradient Wrapper */

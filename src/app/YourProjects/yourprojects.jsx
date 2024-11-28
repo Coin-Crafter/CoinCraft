@@ -3,20 +3,28 @@ import "./yourprojects.css";
 
 const ProjectsPage = () => {
   const [activeTab, setActiveTab] = useState("client");
-  const [projects, setProjects] = useState([
-    { id: 1, title: "Project 1", status: "In Progress", expanded: false },
-    { id: 2, title: "Project 2", status: "Completed", expanded: false },
-    { id: 3, title: "Project 3", status: "Pending Review", expanded: false },
+  const [clientProjects, setClientProjects] = useState([
+    { id: 1, title: "Client Project 1", status: "In Progress", expanded: false },
+    { id: 2, title: "Client Project 2", status: "Completed", expanded: false },
+  ]);
+  const [freelancerProjects, setFreelancerProjects] = useState([
+    { id: 3, title: "Freelance Project 1", status: "Pending Review", expanded: false },
+    { id: 4, title: "Freelance Project 2", status: "In Progress", expanded: false },
   ]);
 
   const toggleExpand = (id) => {
-    setProjects((prevProjects) =>
+    const updateProjects = (prevProjects) =>
       prevProjects.map((project) =>
         project.id === id
           ? { ...project, expanded: !project.expanded }
           : project
-      )
-    );
+      );
+
+    if (activeTab === "client") {
+      setClientProjects(updateProjects);
+    } else {
+      setFreelancerProjects(updateProjects);
+    }
   };
 
   return (
@@ -24,7 +32,7 @@ const ProjectsPage = () => {
       {/* Header Section */}
       <header className="projects-header">
         <h1 >Your Projects</h1>
-        <p>View and manage your ongoing projects as a Seller or Freelancer.</p>
+        <p>View and manage your ongoing projects as a Client or Freelancer.</p>
       </header>
 
       {/* Tabs Section */}
@@ -43,22 +51,35 @@ const ProjectsPage = () => {
         </button>
       </div>
 
-      {/* Create New Project Button */}
-      <button className="create-button">+ Create a New Project</button>
+      {/* Create New Project Button - Only visible for client tab */}
+      {activeTab === "client" && (
+        <div>
+          <button className="create-button">+ Create a New Project</button>
+        </div>
+      )}
 
       {/* Project List */}
-      <div className="projects-list">
-        {projects.map((project) => (
-          <div key={project.id} className="project-card">
-            <div className="project-header" onClick={() => toggleExpand(project.id)}>
+      <div className="yprojects-list">
+        {(activeTab === "client" ? clientProjects : freelancerProjects).map((project) => (
+          <div
+            key={project.id}
+            className={`yprojects-card ${
+              project.expanded ? "expanded-card" : ""
+            }`}
+          >
+            <div
+              className="yprojects-header"
+              onClick={() => toggleExpand(project.id)}
+            >
               <h3>{project.title}</h3>
-              <span className="project-status">{project.status}</span>
-              <button className="expand-button">
-                {project.expanded ? "▲" : "▼"}
+              <button className="yexpand-button">
+              <span className="material-icons">
+                  {project.expanded ? 'expand_less' : 'expand_more'}
+                </span>
               </button>
             </div>
             {project.expanded && (
-              <div className="project-details">
+              <div className="yprojects-details">
                 <p>Details about {project.title}...</p>
               </div>
             )}

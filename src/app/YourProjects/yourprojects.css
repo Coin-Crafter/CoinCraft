@@ -24,7 +24,11 @@
     margin-bottom: 20px;
   }
 
-  .projects-header {
+    .projects-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 50px;
   }
   
@@ -81,61 +85,63 @@
   }
   
   /* Project Cards */
-  .projects-list {
-    margin-top: 20px;
-  }
-  
-  .project-card {
-    background: #5c24ff;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    padding: 10px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .project-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 10px rgba(92, 36, 255, 0.5);
-  }
-  
-  .project-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .project-header h3 {
-    font-size: 1.2rem;
-  }
-  
-  .project-status {
-    font-size: 0.9rem;
-    padding: 2px 10px;
-    background: #000;
-    color: #ff3bff;
-    border-radius: 20px;
-  }
-  
-  .expand-button {
-    background: none;
-    color: #fff;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-  
-  .expand-button:hover {
-    transform: scale(1.2);
-  }
-  
-  /* Expanded Project Details */
-  .project-details {
-    margin-top: 10px;
-    background: #1e1e1e;
-    padding: 10px;
-    border-radius: 8px;
-    color: #d3d3d3;
-  }
-  
+.yprojects-list {
+  margin-top: 20px;
+}
+
+.yprojects-card {
+  background: #1e1e1e;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  overflow: hidden;
+  transition: transform 0.3s ease, height 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  height: 50px;
+  padding-top: 0px;
+}
+
+.yprojects-card.expanded-card {
+  height: auto;
+  border: 2px solid #ff3bff;
+}
+
+.yprojects-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.yprojects-header h3 {
+  font-size: 1.2rem;
+}
+
+.yexpand-button {
+  background: none;
+  color: #fff;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.yexpand-button .material-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px; /* Adjust size as needed */
+}
+
+.yexpand-button:hover {
+  transform: scale(1.1);
+}
+
+/* Expanded Project Details */
+.yprojects-details {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  color: #d3d3d3;
+  transition: all 0.3s ease;
+}
