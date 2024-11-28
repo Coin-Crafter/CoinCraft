@@ -54,6 +54,7 @@
     color: #fff;
     width : 50%;
     border: 2px;
+    font-size: 1rem;
   }
   
   .tab.active {
@@ -144,4 +145,53 @@
   border-radius: 5px;
   color: #d3d3d3;
   transition: all 0.3s ease;
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #1e1e1e;
+  border-radius: 10px;
+  padding: 20px;
+  width: 400px;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+  text-align: center;
+  color: #fff;
+}
+
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #5c24ff;
+  border-radius: 5px;
+  background: #000;
+  color: #fff;
+}
+
+.modal-content button {
+  padding: 10px 20px;
+  margin: 5px;
+  background: linear-gradient(90deg, #ff3bff, #5c24ff);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-content button:hover {
+  transform: scale(1.05);
 }
