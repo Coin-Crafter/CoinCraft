@@ -4,7 +4,7 @@ import Listing from './Listing/listing';
 import Header from './Header/header';
 import Content from './Homepage/Content';
 import Add from './AddProject/addproject';
-import Find from './FindProject/findproject';
+import ProjectsPage from './YourProjects/yourprojects';
 import Verify from './Verifier/verifier';
 
 export default function Index() {
@@ -27,9 +27,9 @@ export default function Index() {
                         <Add/>
                     </>
                 }/>
-                <Route path="/find-project" element={ 
+                <Route path="/your-projects" element={ 
                     <>
-                        <Find/>
+                        <ProjectsPage/>
                     </>
                 }/>
                 <Route path="/be-a-verifier" element={ 

@@ -44,8 +44,8 @@ const Header = () => {
         <Link to="/project-listing" className="nav-link">
           Project Listing
         </Link>
-        <Link to="/find-project" className="nav-link">
-          Find Project
+        <Link to="/your-projects" className="nav-link">
+          Your Projects
         </Link>
         <Link to="/be-a-verifier" className="nav-link">
           Be a Verifier
