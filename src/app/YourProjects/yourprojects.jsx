@@ -12,6 +12,31 @@ const ProjectsPage = () => {
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [isLoading, setIsLoading] = useState(false);
 
+const removeProject = async (projectId) => {
+  try {
+    if (!window.ethereum) {
+      alert("MetaMask is not installed!");
+      return;
+    }
+
+    const provider = new BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new Contract(contractAddress, contractABI, signer);
+
+    const tx = await contract.removeProject(projectId);
+    await tx.wait();
+
+    alert("Project removed successfully!");
+
+    // Refresh the project list after removal
+    loadProjects();
+  } catch (error) {
+    console.error("Error removing project:", error);
+    alert("Failed to remove the project.");
+  }
+};
+
+
   // Load projects from the blockchain
   const loadProjects = async () => {
     try {
@@ -24,29 +49,25 @@ const ProjectsPage = () => {
       const signer = await provider.getSigner();
       const contract = new Contract(contractAddress, contractABI, signer);
 
-      // Get the connected wallet address
       const walletAddress = await signer.getAddress();
+      const blockchainProjects = await contract.getProjectsByAddress(
+        walletAddress
+      );
 
-      // Fetch projects for this wallet address
-      const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
-
-      // Map blockchain data to local state structure
       const loadedProjects = blockchainProjects.map((project, index) => ({
         id: index + 1,
         title: project.name,
         description: project.description,
-        status: "In Progress",
+        status: "Open", // Default status for demonstration
         expanded: false,
       }));
 
-      // Set state with loaded projects
       setClientProjects(loadedProjects);
     } catch (error) {
       console.error("Error loading projects:", error);
     }
   };
 
-  // Call loadProjects on component mount
   useEffect(() => {
     loadProjects();
   }, []);
@@ -63,6 +84,16 @@ const ProjectsPage = () => {
       setClientProjects(updateProjects(clientProjects));
     } else {
       setFreelancerProjects(updateProjects(freelancerProjects));
+    }
+  };
+
+  const handleRemoveProject = (id) => {
+    if (activeTab === "client") {
+      setClientProjects((prev) => prev.filter((project) => project.id !== id));
+    } else {
+      setFreelancerProjects((prev) =>
+        prev.filter((project) => project.id !== id)
+      );
     }
   };
 
@@ -100,10 +131,7 @@ const ProjectsPage = () => {
       await tx.wait();
 
       alert("Project created successfully!");
-
-      // Refresh the projects after adding a new one
       loadProjects();
-
       setFormData({ name: "", description: "" });
       setShowModal(false);
       setIsLoading(false);
@@ -114,15 +142,28 @@ const ProjectsPage = () => {
     }
   };
 
+  const renderProjectStatus = (status) => {
+    switch (status) {
+      case "Open":
+        return <span className="status open">Open</span>;
+      case "In Progress":
+        return <span className="status in-progress">In Progress</span>;
+      case "Dispute":
+        return <span className="status dispute">Dispute</span>;
+      case "Completed":
+        return <span className="status completed">Completed</span>;
+      default:
+        return <span className="status unknown">Unknown</span>;
+    }
+  };
+
   return (
     <div className="projects-page">
-      {/* Header Section */}
       <header className="projects-header">
         <h1>Your Projects</h1>
         <p>View and manage your ongoing projects as a Client or Freelancer.</p>
       </header>
 
-      {/* Tabs Section */}
       <div className="tabs">
         <button
           className={`tab ${activeTab === "client" ? "active" : ""}`}
@@ -138,7 +179,6 @@ const ProjectsPage = () => {
         </button>
       </div>
 
-      {/* Create New Project Button */}
       {activeTab === "client" && (
         <div>
           <button className="create-button" onClick={() => setShowModal(true)}>
@@ -147,36 +187,44 @@ const ProjectsPage = () => {
         </div>
       )}
 
-      {/* Project List */}
       <div className="yprojects-list">
-        {(activeTab === "client" ? clientProjects : freelancerProjects).map((project) => (
-          <div
-            key={project.id}
-            className={`yprojects-card ${
-              project.expanded ? "expanded-card" : ""
-            }`}
-          >
+        {(activeTab === "client" ? clientProjects : freelancerProjects).map(
+          (project) => (
             <div
-              className="yprojects-header"
-              onClick={() => toggleExpand(project.id)}
+              key={project.id}
+              className={`yprojects-card ${
+                project.expanded ? "expanded-card" : ""
+              }`}
             >
-              <h3>{project.title}</h3>
-              <button className="yexpand-button">
-                <span className="material-icons">
-                  {project.expanded ? "expand_less" : "expand_more"}
-                </span>
-              </button>
-            </div>
-            {project.expanded && (
-              <div className="yprojects-details">
-                <p>{project.description}</p>
+              <div
+                className="yprojects-header"
+                onClick={() => toggleExpand(project.id)}
+              >
+                <h3>{project.title}</h3>
+                <button className="yexpand-button">
+                  <span className="material-icons">
+                    {project.expanded ? "expand_less" : "expand_more"}
+                  </span>
+                </button>
               </div>
-            )}
-          </div>
-        ))}
+              {project.expanded && (
+                <div className="yprojects-details">
+                  <p>{project.description}</p>
+                  {project.status === "Open" && (
+                    <button
+                      className="remove-button"
+                      onClick={() => removeProject(project.id)}
+                    >
+                      Remove Project
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        )}
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">

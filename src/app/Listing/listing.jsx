@@ -1,43 +1,70 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { ethers } from "ethers";
 import ProjectCard from "./ProjectCard"; // Import card component
 import "./listing.css"; // Import styles
+import ProjectManagerABI from "../../contract/contractABI.json"; 
+import { contractAddress } from "../../contract/contractAddress";
 
 function Listing() {
-  const projects = [
-    {
-      title: "Project 1",
-      description:
-        "Need a professional logo with writing underneath for our jewellery company",
-      stipend: 100,
-    },
-    {
-      title: "Project 2",
-      description:
-        "Need a professional logo with writing underneath for our jewellery company",
-      stipend: 100,
-    },
-    {
-      title: "Project 3",
-      description:
-        "Need a professional logo with writing underneath for our jewellery company",
-      stipend: 100,
-    },
-  ];
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const abi = ProjectManagerABI;
+
+  useEffect(() => {
+    const fetchOpenProjects = async () => {
+      try {
+        setLoading(true);
+
+        // Connect to the Ethereum provider
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        // Get contract instance
+        const contract = new ethers.Contract(contractAddress, abi, signer);
+
+        // Fetch projects with status "Open"
+        const statusOpen = 0; // Enum value for "Open"
+        const openProjects = await contract.getProjectsByStatus(statusOpen);
+
+        // Map raw data into a readable format
+        const formattedProjects = openProjects.map((project) => ({
+          title: project.name,
+          description: project.description,
+          stipend: ethers.formatUnits(project.stipend || "0", "ether"),
+        }));
+
+        setProjects(formattedProjects);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOpenProjects();
+  }, []);
 
   return (
     <div className="listing-page">
       <div className="listing-header">
-        <h1>Projects You Have Listed</h1>
+        <h1>Open Projects</h1>
       </div>
       <div className="project-grid">
-        {projects.map((project, index) => (
-          <ProjectCard
-            key={index}
-            title={project.title}
-            description={project.description}
-            stipend={project.stipend}
-          />
-        ))}
+        {loading ? (
+          <p>Loading projects...</p>
+        ) : projects.length > 0 ? (
+          projects.map((project, index) => (
+            <ProjectCard
+              key={index}
+              title={project.title}
+              description={project.description}
+              stipend={project.stipend}
+            />
+          ))
+        ) : (
+          <p>No open projects available.</p>
+        )}
       </div>
     </div>
   );
