@@ -25,9 +25,40 @@
         "internalType": "address",
         "name": "creator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ProjectManager.Status",
+        "name": "status",
+        "type": "uint8"
       }
     ],
     "name": "ProjectCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "projectId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ProjectManager.Status",
+        "name": "oldStatus",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ProjectManager.Status",
+        "name": "newStatus",
+        "type": "uint8"
+      }
+    ],
+    "name": "ProjectStatusUpdated",
     "type": "event"
   },
   {
@@ -84,6 +115,57 @@
             "internalType": "address",
             "name": "creator",
             "type": "address"
+          },
+          {
+            "internalType": "enum ProjectManager.Status",
+            "name": "status",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct ProjectManager.Project[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "enum ProjectManager.Status",
+        "name": "_status",
+        "type": "uint8"
+      }
+    ],
+    "name": "getProjectsByStatus",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "creator",
+            "type": "address"
+          },
+          {
+            "internalType": "enum ProjectManager.Status",
+            "name": "status",
+            "type": "uint8"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -123,9 +205,32 @@
         "internalType": "address",
         "name": "creator",
         "type": "address"
+      },
+      {
+        "internalType": "enum ProjectManager.Status",
+        "name": "status",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_projectId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum ProjectManager.Status",
+        "name": "_newStatus",
+        "type": "uint8"
+      }
+    ],
+    "name": "updateProjectStatus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

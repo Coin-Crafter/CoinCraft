@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/jigneshmotwani/CoinCraft/hardhat/contracts/ProjectManager.sol": {
-      "lastModificationDate": 1732812541125,
-      "contentHash": "8ff36bb5d319c1498f274c0522b251b7",
+      "lastModificationDate": 1732864326957,
+      "contentHash": "e1a10c898dabcfc2f48772e611facce3",
       "sourceName": "contracts/ProjectManager.sol",
       "solcConfig": {
         "version": "0.8.0",
