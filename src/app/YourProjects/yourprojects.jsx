@@ -16,30 +16,65 @@ const ProjectsPage = () => {
 
 
   // Load projects from the blockchain
+  // const loadProjects = async () => {
+  //   try {
+  //     if (!window.ethereum) {
+  //       alert("MetaMask is not installed!");
+  //       return;
+  //     }
+
+  //     const provider = new BrowserProvider(window.ethereum);
+  //     const signer = await provider.getSigner();
+  //     const contract = new Contract(contractAddress, contractABI, signer);
+
+  //     const walletAddress = await signer.getAddress();
+  //     const blockchainProjects = await contract.getProjectsByAddress(
+  //       walletAddress
+  //     );
+
+  //     const loadedProjects = blockchainProjects.map((project, index) => ({
+  //       id: index + 1,
+  //       title: project.name,
+  //       description: project.description,
+  //       status: "Open", // Default status for demonstration
+  //       expanded: false,
+  //     }));
+
+  //     setClientProjects(loadedProjects);
+  //   } catch (error) {
+  //     console.error("Error loading projects:", error);
+  //   }
+  // };
+
   const loadProjects = async () => {
     try {
       if (!window.ethereum) {
         alert("MetaMask is not installed!");
         return;
       }
-
+  
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new Contract(contractAddress, contractABI, signer);
-
+  
       const walletAddress = await signer.getAddress();
       const blockchainProjects = await contract.getProjectsByAddress(
         walletAddress
       );
-
+  
+      console.log('Loaded Blockchain Projects:', blockchainProjects);
+  
       const loadedProjects = blockchainProjects.map((project, index) => ({
-        id: index + 1,
+        id: index + 1, // or potentially just `index` depending on how you want to track IDs
         title: project.name,
         description: project.description,
-        status: "Open", // Default status for demonstration
+        status: "Open",
         expanded: false,
+        projectFee: ethers.formatEther(project.projectFee),
+        isTransferred: project.isTransferred,
+        freelancerAddress: project.freelancer // Add this line
       }));
-
+  
       setClientProjects(loadedProjects);
     } catch (error) {
       console.error("Error loading projects:", error);
@@ -115,6 +150,36 @@ const ProjectsPage = () => {
     }
   };  
 
+  // const handleTransferFunds = async (projectId, freelancerAddress, projectFee, verificationFee) => {
+  //   try {
+  //     if (!window.ethereum) {
+  //       alert("MetaMask is not installed!");
+  //       return;
+  //     }
+  
+  //     const provider = new BrowserProvider(window.ethereum);
+  //     const signer = await provider.getSigner();
+  //     const contract = new Contract(contractAddress, contractABI, signer);
+  
+  //     const totalFee = ethers.parseEther(
+  //       (parseFloat(projectFee) + parseFloat(verificationFee)).toString()
+  //     );
+  
+  //     // Transfer funds to the freelancer
+  //     const tx = await contract.transferFunds(projectId, freelancerAddress, {
+  //       value: totalFee,
+  //     });
+  
+  //     await tx.wait();
+  
+  //     alert("Funds transferred successfully!");
+  //     loadProjects(); // Refresh projects
+  //   } catch (error) {
+  //     console.error("Error transferring funds:", error);
+  //     alert("Error transferring funds. Please try again.");
+  //   }
+  // };
+  
   const handleTransferFunds = async (projectId, freelancerAddress, projectFee, verificationFee) => {
     try {
       if (!window.ethereum) {
@@ -122,12 +187,43 @@ const ProjectsPage = () => {
         return;
       }
   
+      console.log('Transfer Details:', {
+        projectId, 
+        freelancerAddress, 
+        projectFee, 
+        verificationFee
+      });
+  
+      // Validate inputs
+      if (projectId == null || !freelancerAddress) {
+        alert("Invalid project ID or freelancer address.");
+        return;
+      }
+  
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new Contract(contractAddress, contractABI, signer);
   
+      // Fetch all projects for the current user to verify the project exists
+      const walletAddress = await signer.getAddress();
+      const userProjects = await contract.getProjectsByAddress(walletAddress);
+  
+      console.log('User Projects:', userProjects);
+      console.log('Attempting to transfer project with ID:', projectId);
+  
+      // Verify the project exists in the user's projects
+      const projectExists = userProjects.length > projectId;
+      if (!projectExists) {
+        alert(`Project with ID ${projectId} does not exist for this user.`);
+        return;
+      }
+  
+      // Convert to string and parse explicitly
+      const projectFeeStr = String(projectFee);
+      const verificationFeeStr = String(verificationFee);
+  
       const totalFee = ethers.parseEther(
-        (parseFloat(projectFee) + parseFloat(verificationFee)).toString()
+        (parseFloat(projectFeeStr) + parseFloat(verificationFeeStr)).toString()
       );
   
       // Transfer funds to the freelancer
@@ -140,11 +236,11 @@ const ProjectsPage = () => {
       alert("Funds transferred successfully!");
       loadProjects(); // Refresh projects
     } catch (error) {
-      console.error("Error transferring funds:", error);
-      alert("Error transferring funds. Please try again.");
+      console.error("Full error details:", error);
+      alert(`Error transferring funds: ${error.message}`);
     }
-  };  
-
+  };
+  
   const renderProjectStatus = (status) => {
     switch (status) {
       case "Open":
@@ -238,15 +334,23 @@ const ProjectsPage = () => {
                       />
                       <button
                         className="transfer-funds-button"
-                        onClick={() =>
+                        onClick={() => {
+                          // Log the exact project details before transfer
+                          console.log('Project details for transfer:', {
+                            projectId: project.id - 1, // Adjust index if needed
+                            freelancerAddress: project.freelancerAddress,
+                            projectFee: project.projectFee,
+                            verificationFee: VERIFICATION_FEE
+                          });
+
                           handleTransferFunds(
-                            project.id,
-                            project.freelancerAddress, // User-provided address
+                            project.id - 1, // Adjust index to match contract's zero-based indexing
+                            project.freelancerAddress,
                             project.projectFee,
                             VERIFICATION_FEE
-                          )
-                        }
-                        disabled={!project.freelancerAddress} // Disable if no address entered
+                          );
+                        }}
+                        disabled={!project.freelancerAddress}
                       >
                         Transfer Funds
                       </button>

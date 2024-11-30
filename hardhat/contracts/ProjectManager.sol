@@ -73,26 +73,21 @@ contract ProjectManager {
 
     // Function to transfer the locked fees to another address
     function transferFunds(uint256 _projectId, address _freelancer) public payable {
-        // Validate the project exists
         require(_projectId < projects.length, "Project does not exist");
 
         Project storage project = projects[_projectId];
 
-        // Ensure the caller is the project creator
         require(msg.sender == project.creator, "Only the creator can transfer funds");
-
-        // Ensure the funds have not already been transferred
         require(!project.isTransferred, "Funds already transferred");
-
-        // Ensure the exact amount is being sent
         uint256 totalFee = project.projectFee + project.verificationFee;
         require(msg.value == totalFee, "Incorrect fee amount sent");
 
-        // Transfer funds to the specified freelancer
         project.freelancer = _freelancer;
         project.isTransferred = true;
 
-        payable(_freelancer).transfer(msg.value);
+        // Forward the funds to the freelancer
+        (bool success, ) = payable(_freelancer).call{value: msg.value}("");
+        require(success, "Transfer failed");
 
         emit FundsTransferred(_projectId, _freelancer, msg.value);
     }

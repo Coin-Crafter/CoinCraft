@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\Akash\\Desktop\\Term 7\\Blockchain Technology\\CoinCraft\\hardhat\\contracts\\ProjectManager.sol": {
-      "lastModificationDate": 1732965281047,
-      "contentHash": "8a048eb3176f0a92b62e07552c24aa02",
+      "lastModificationDate": 1732972066037,
+      "contentHash": "bddcd95cf6bbc52a93c13e6c65d22623",
       "sourceName": "contracts/ProjectManager.sol",
       "solcConfig": {
         "version": "0.8.0",
