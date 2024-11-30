@@ -189,6 +189,72 @@
   {
     "inputs": [
       {
+        "internalType": "enum ProjectManager.Status",
+        "name": "_status",
+        "type": "uint8"
+      }
+    ],
+    "name": "getProjectsByStatus",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "creator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "freelancer",
+            "type": "address"
+          },
+          {
+            "internalType": "enum ProjectManager.Status",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "projectFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "verificationFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isTransferred",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct ProjectManager.Project[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"

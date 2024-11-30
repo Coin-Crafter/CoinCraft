@@ -3,7 +3,6 @@ import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 import Listing from './Listing/listing';
 import Header from './Header/header';
 import Content from './Homepage/Content';
-import Add from './AddProject/addproject';
 import ProjectsPage from './YourProjects/yourprojects';
 import Verify from './Verifier/verifier';
 
@@ -20,11 +19,6 @@ export default function Index() {
                 <Route path="/project-listing" element={ 
                     <>
                         <Listing/>
-                    </>
-                }/>
-                <Route path="/add-project" element={ 
-                    <>
-                        <Add/>
                     </>
                 }/>
                 <Route path="/your-projects" element={ 

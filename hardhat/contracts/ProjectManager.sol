@@ -8,7 +8,6 @@ contract ProjectManager {
         InDispute,
         Completed
     }
-
     struct Project {
         string name;
         string description;
@@ -112,6 +111,28 @@ contract ProjectManager {
 
         for (uint256 i = 0; i < projects.length; i++) {
             if (projects[i].creator == _creator) {
+                result[index] = projects[i];
+                index++;
+            }
+        }
+
+        return result;
+    }
+    // Getter to retrieve all projects with a specific status
+    function getProjectsByStatus(Status _status) public view returns (Project[] memory) {
+        uint256 totalCount = 0;
+
+        for (uint256 i = 0; i < projects.length; i++) {
+            if (projects[i].status == _status) {
+                totalCount++;
+            }
+        }
+
+        Project[] memory result = new Project[](totalCount);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < projects.length; i++) {
+            if (projects[i].status == _status) {
                 result[index] = projects[i];
                 index++;
             }

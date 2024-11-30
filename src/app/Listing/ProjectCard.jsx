@@ -25,7 +25,7 @@ function ProjectCard({ title, description, stipend }) {
       
         <div className="button-gradient-wrapper">
         <div className="button-inner-wrapper">
-          <button className="gradient-button">Remove Project</button>
+          <button className="gradient-button">Add Project</button>
         </div>
       </div>
 

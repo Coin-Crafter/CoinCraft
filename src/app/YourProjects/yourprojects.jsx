@@ -14,6 +14,7 @@ const ProjectsPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const VERIFICATION_FEE = "0.0005";
 
+
   // Load projects from the blockchain
   const loadProjects = async () => {
     try {
@@ -26,29 +27,25 @@ const ProjectsPage = () => {
       const signer = await provider.getSigner();
       const contract = new Contract(contractAddress, contractABI, signer);
 
-      // Get the connected wallet address
       const walletAddress = await signer.getAddress();
+      const blockchainProjects = await contract.getProjectsByAddress(
+        walletAddress
+      );
 
-      // Fetch projects for this wallet address
-      const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
-
-      // Map blockchain data to local state structure
       const loadedProjects = blockchainProjects.map((project, index) => ({
         id: index + 1,
         title: project.name,
         description: project.description,
-        status: "In Progress",
+        status: "Open", // Default status for demonstration
         expanded: false,
       }));
 
-      // Set state with loaded projects
       setClientProjects(loadedProjects);
     } catch (error) {
       console.error("Error loading projects:", error);
     }
   };
 
-  // Call loadProjects on component mount
   useEffect(() => {
     loadProjects();
   }, []);
@@ -67,6 +64,7 @@ const ProjectsPage = () => {
       setFreelancerProjects(updateProjects(freelancerProjects));
     }
   };
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -147,15 +145,28 @@ const ProjectsPage = () => {
     }
   };  
 
+  const renderProjectStatus = (status) => {
+    switch (status) {
+      case "Open":
+        return <span className="status open">Open</span>;
+      case "In Progress":
+        return <span className="status in-progress">In Progress</span>;
+      case "Dispute":
+        return <span className="status dispute">Dispute</span>;
+      case "Completed":
+        return <span className="status completed">Completed</span>;
+      default:
+        return <span className="status unknown">Unknown</span>;
+    }
+  };
+
   return (
     <div className="projects-page">
-      {/* Header Section */}
       <header className="projects-header">
         <h1>Your Projects</h1>
         <p>View and manage your ongoing projects as a Client or Freelancer.</p>
       </header>
 
-      {/* Tabs Section */}
       <div className="tabs">
         <button
           className={`tab ${activeTab === "client" ? "active" : ""}`}
@@ -171,7 +182,6 @@ const ProjectsPage = () => {
         </button>
       </div>
 
-      {/* Create New Project Button */}
       {activeTab === "client" && (
         <div>
           <button className="create-button" onClick={() => setShowModal(true)}>
@@ -181,100 +191,74 @@ const ProjectsPage = () => {
       )}
 
       {/* Project List */}
-      {/* <div className="yprojects-list">
-        {(activeTab === "client" ? clientProjects : freelancerProjects).map((project) => (
-          <div
-            key={project.id}
-            className={`yprojects-card ${
-              project.expanded ? "expanded-card" : ""
-            }`}
-          >
-            <div
-              className="yprojects-header"
-              onClick={() => toggleExpand(project.id)}
-            >
-              <h3>{project.title}</h3>
-              <button className="yexpand-button">
-                <span className="material-icons">
-                  {project.expanded ? "expand_less" : "expand_more"}
-                </span>
-              </button>
-            </div>
-            {project.expanded && (
-              <div className="yprojects-details">
-                <p>{project.description}</p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div> */}
-
       <div className="yprojects-list">
-        {(activeTab === "client" ? clientProjects : freelancerProjects).map((project) => (
-          <div
-            key={project.id}
-            className={`yprojects-card ${
-              project.expanded ? "expanded-card" : ""
-            }`}
-          >
+        {(activeTab === "client" ? clientProjects : freelancerProjects).map(
+          (project) => (
             <div
-              className="yprojects-header"
-              onClick={() => toggleExpand(project.id)}
+              key={project.id}
+              className={`yprojects-card ${
+                project.expanded ? "expanded-card" : ""
+              }`}
             >
-              <h3>{project.title}</h3>
-              <button className="yexpand-button">
-                <span className="material-icons">
-                  {project.expanded ? "expand_less" : "expand_more"}
-                </span>
-              </button>
-            </div>
-            {project.expanded && (
-              <div className="yprojects-details">
-                <p>{project.description}</p>
-                <p>Status: {project.isTransferred ? "Completed" : "Pending Transfer"}</p>
-
-                {/* Transfer Funds Section */}
-                {!project.isTransferred && (
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Enter Freelancer Address"
-                      value={project.freelancerAddress || ""}
-                      onChange={(e) =>
-                        setClientProjects((prevProjects) =>
-                          prevProjects.map((p) =>
-                            p.id === project.id
-                              ? { ...p, freelancerAddress: e.target.value }
-                              : p
-                          )
-                        )
-                      }
-                    />
-                    <button
-                      className="transfer-funds-button"
-                      onClick={() =>
-                        handleTransferFunds(
-                          project.id,
-                          project.freelancerAddress, // User-provided address
-                          project.projectFee,
-                          VERIFICATION_FEE
-                        )
-                      }
-                      disabled={!project.freelancerAddress} // Disable if no address entered
-                    >
-                      Transfer Funds
-                    </button>
-                  </div>
-                )}
+              <div
+                className="yprojects-header"
+                onClick={() => toggleExpand(project.id)}
+              >
+                <h3>{project.title}</h3>
+                <button className="yexpand-button">
+                  <span className="material-icons">
+                    {project.expanded ? "expand_less" : "expand_more"}
+                  </span>
+                </button>
               </div>
-            )}
-          </div>
-        ))}
+              {project.expanded && (
+                <div className="yprojects-details">
+                  <p>{project.description}</p>
+                  <p>
+                    Status:{" "}
+                    {project.isTransferred ? "Completed" : "Pending Transfer"}
+                  </p>
+
+                  {/* Transfer Funds Section */}
+                  {!project.isTransferred && (
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Enter Freelancer Address"
+                        value={project.freelancerAddress || ""}
+                        onChange={(e) =>
+                          setClientProjects((prevProjects) =>
+                            prevProjects.map((p) =>
+                              p.id === project.id
+                                ? { ...p, freelancerAddress: e.target.value }
+                                : p
+                            )
+                          )
+                        }
+                      />
+                      <button
+                        className="transfer-funds-button"
+                        onClick={() =>
+                          handleTransferFunds(
+                            project.id,
+                            project.freelancerAddress, // User-provided address
+                            project.projectFee,
+                            VERIFICATION_FEE
+                          )
+                        }
+                        disabled={!project.freelancerAddress} // Disable if no address entered
+                      >
+                        Transfer Funds
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        )}
       </div>
 
-
-
-      {/* Modal */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
@@ -313,7 +297,6 @@ const ProjectsPage = () => {
               </button>
               <button onClick={() => setShowModal(false)}>Cancel</button>
             </div>
-
           </div>
         </div>
       )}
