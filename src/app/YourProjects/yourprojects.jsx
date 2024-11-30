@@ -12,30 +12,6 @@ const ProjectsPage = () => {
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [isLoading, setIsLoading] = useState(false);
 
-const removeProject = async (projectId) => {
-  try {
-    if (!window.ethereum) {
-      alert("MetaMask is not installed!");
-      return;
-    }
-
-    const provider = new BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const contract = new Contract(contractAddress, contractABI, signer);
-
-    const tx = await contract.removeProject(projectId);
-    await tx.wait();
-
-    alert("Project removed successfully!");
-
-    // Refresh the project list after removal
-    loadProjects();
-  } catch (error) {
-    console.error("Error removing project:", error);
-    alert("Failed to remove the project.");
-  }
-};
-
 
   // Load projects from the blockchain
   const loadProjects = async () => {
@@ -87,15 +63,6 @@ const removeProject = async (projectId) => {
     }
   };
 
-  const handleRemoveProject = (id) => {
-    if (activeTab === "client") {
-      setClientProjects((prev) => prev.filter((project) => project.id !== id));
-    } else {
-      setFreelancerProjects((prev) =>
-        prev.filter((project) => project.id !== id)
-      );
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -210,14 +177,6 @@ const removeProject = async (projectId) => {
               {project.expanded && (
                 <div className="yprojects-details">
                   <p>{project.description}</p>
-                  {project.status === "Open" && (
-                    <button
-                      className="remove-button"
-                      onClick={() => removeProject(project.id)}
-                    >
-                      Remove Project
-                    </button>
-                  )}
                 </div>
               )}
             </div>
