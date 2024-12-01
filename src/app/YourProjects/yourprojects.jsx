@@ -48,6 +48,58 @@ const ProjectsPage = () => {
 
   const loadProjects = async () => {
     try {
+      setIsLoading(true);
+      if (!window.ethereum) {
+        throw new Error("MetaMask is not installed!");
+      }
+  
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new Contract(contractAddress, contractABI, signer);
+      
+      const walletAddress = await signer.getAddress();
+      
+      // Debugging: Log wallet address
+      console.log("Current Wallet Address:", walletAddress);
+
+      let blockchainProjects;
+      try {
+        blockchainProjects = await contract.getProjectsByAddress(walletAddress);
+      } catch (fetchError) {
+        console.error("Error fetching projects:", fetchError);
+        throw new Error("Could not fetch projects from blockchain");
+      }
+  
+      console.log("Raw Blockchain Projects:", blockchainProjects);
+  
+      const loadedProjects = blockchainProjects.map((project, index) => ({
+        blockchainIndex: index, // Store the actual blockchain index
+        id: ethers.toNumber(project.id || index), // Fallback to index if no ID
+        title: project.name,
+        description: project.description,
+        status: ethers.toNumber(project.status),
+        expanded: false,
+        projectFee: ethers.formatEther(project.projectFee),
+        isTransferred: project.isTransferred,
+        freelancerAddress: project.freelancer,
+        creator: project.creator // Add creator address
+      }));
+  
+      setClientProjects(loadedProjects);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Comprehensive Project Loading Error:", error);
+      setIsLoading(false);
+      alert(`Failed to load projects: ${error.message}`);
+    }
+  };
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  const handleUpdateProjectStatus = async (projectId, newStatus) => {
+    try {
       if (!window.ethereum) {
         alert("MetaMask is not installed!");
         return;
@@ -57,33 +109,26 @@ const ProjectsPage = () => {
       const signer = await provider.getSigner();
       const contract = new Contract(contractAddress, contractABI, signer);
   
-      const walletAddress = await signer.getAddress();
-      const blockchainProjects = await contract.getProjectsByAddress(
-        walletAddress
-      );
+      const tx = await contract.updateProjectStatus(projectId, newStatus);
+      await tx.wait();
   
-      console.log('Loaded Blockchain Projects:', blockchainProjects);
-  
-      const loadedProjects = blockchainProjects.map((project, index) => ({
-        id: index + 1, // or potentially just `index` depending on how you want to track IDs
-        title: project.name,
-        description: project.description,
-        status: "Open",
-        expanded: false,
-        projectFee: ethers.formatEther(project.projectFee),
-        isTransferred: project.isTransferred,
-        freelancerAddress: project.freelancer // Add this line
-      }));
-  
-      setClientProjects(loadedProjects);
+      alert(`Project status updated to ${getStatusText(newStatus)}`);
+      loadProjects(); // Refresh projects
     } catch (error) {
-      console.error("Error loading projects:", error);
+      console.error("Error updating project status:", error);
+      alert("Error updating project status. Please try again.");
     }
   };
 
-  useEffect(() => {
-    loadProjects();
-  }, []);
+  const getStatusText = (statusNumber) => {
+    const statusMap = {
+      0: "Open",
+      1: "In Progress",
+      2: "In Dispute",
+      3: "Completed"
+    };
+    return statusMap[statusNumber] || "Unknown";
+  };
 
   const toggleExpand = (id) => {
     const updateProjects = (prevProjects) =>
@@ -93,13 +138,90 @@ const ProjectsPage = () => {
           : project
       );
 
-    if (activeTab === "client") {
-      setClientProjects(updateProjects(clientProjects));
-    } else {
-      setFreelancerProjects(updateProjects(freelancerProjects));
+    setClientProjects(updateProjects(clientProjects));
+  };
+
+  const handleRemoveProject = async (blockchainIndex) => {
+    // Validate input
+    if (blockchainIndex === undefined || blockchainIndex === null) {
+      alert("Invalid project identifier");
+      return;
+    }
+
+    try {
+      // Check MetaMask
+      if (!window.ethereum) {
+        throw new Error("MetaMask is not installed!");
+      }
+
+      // Set loading state
+      setIsLoading(true);
+
+      // Create provider and contract instance
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new Contract(contractAddress, contractABI, signer);
+
+      // Get current wallet address
+      const currentAddress = await signer.getAddress();
+      
+      // Retrieve specific project to verify details
+      let projectDetails;
+      try {
+        projectDetails = await contract.projects(blockchainIndex);
+        console.log("Project Details Before Removal:", {
+          index: blockchainIndex,
+          name: projectDetails.name,
+          creator: projectDetails.creator,
+          status: ethers.toNumber(projectDetails.status)
+        });
+      } catch (detailError) {
+        console.error("Error retrieving project details:", detailError);
+        throw new Error("Could not verify project details");
+      }
+
+      // Validate project removal conditions
+      if (projectDetails.creator.toLowerCase() !== currentAddress.toLowerCase()) {
+        throw new Error("Only the project creator can remove this project");
+      }
+
+      if (ethers.toNumber(projectDetails.status) !== 0) { // 0 represents "Open" status
+        throw new Error("Only open projects can be removed");
+      }
+
+      // Attempt to remove project
+      try {
+        const tx = await contract.removeProject(blockchainIndex);
+        const receipt = await tx.wait();
+
+        console.log("Project Removal Transaction Receipt:", receipt);
+        
+        alert("Project removed successfully!");
+        
+        // Reload projects to reflect changes
+        await loadProjects();
+      } catch (removalError) {
+        console.error("Project Removal Error:", removalError);
+        alert(`Failed to remove project: ${removalError.message}`);
+      }
+
+    } catch (error) {
+      console.error("Comprehensive Remove Project Error:", {
+        message: error.message,
+        stack: error.stack
+      });
+      
+      alert(`Error: ${error.message}`);
+    } finally {
+      // Ensure loading state is reset
+      setIsLoading(false);
     }
   };
 
+  // Initial project load
+  useEffect(() => {
+    loadProjects();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -148,7 +270,7 @@ const ProjectsPage = () => {
       alert("Error creating project. Please try again.");
       setIsLoading(false);
     }
-  };  
+  };    
 
   // const handleTransferFunds = async (projectId, freelancerAddress, projectFee, verificationFee) => {
   //   try {
@@ -313,8 +435,20 @@ const ProjectsPage = () => {
                   <p>
                     Status:{" "}
                     {project.isTransferred ? "Completed" : "Pending Transfer"}
+                    <br />Status: {getStatusText(project.status)}
                   </p>
 
+                  {getStatusText(project.status) === "Open" && ( // Only for Open status
+                    <div>
+                      <button 
+                        className="remove-project-button"
+                        onClick={() => handleRemoveProject(project.id)}
+                      >
+                        Remove Project
+                      </button>
+                    </div>
+                  )}
+                  
                   {/* Transfer Funds Section */}
                   {!project.isTransferred && (
                     <div>
@@ -337,14 +471,14 @@ const ProjectsPage = () => {
                         onClick={() => {
                           // Log the exact project details before transfer
                           console.log('Project details for transfer:', {
-                            projectId: project.id - 1, // Adjust index if needed
+                            projectId: project.id, // Adjust index if needed
                             freelancerAddress: project.freelancerAddress,
                             projectFee: project.projectFee,
                             verificationFee: VERIFICATION_FEE
                           });
 
                           handleTransferFunds(
-                            project.id - 1, // Adjust index to match contract's zero-based indexing
+                            project.id, // Adjust index to match contract's zero-based indexing
                             project.freelancerAddress,
                             project.projectFee,
                             VERIFICATION_FEE
@@ -356,6 +490,8 @@ const ProjectsPage = () => {
                       </button>
                     </div>
                   )}
+
+                  
                 </div>
               )}
             </div>

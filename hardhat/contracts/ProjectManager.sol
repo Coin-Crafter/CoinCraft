@@ -18,6 +18,7 @@ contract ProjectManager {
         uint256 projectFee;
         uint256 verificationFee;
         bool isTransferred; // To indicate if the funds have been transferred
+        bool isActive;
     }
 
     Project[] public projects;
@@ -35,7 +36,13 @@ contract ProjectManager {
         uint256 verificationFee
     );
 
-    event FundsTransferred(uint256 projectId, address recipient, uint256 amount);
+    event ProjectRemoved(uint256 projectId, address creator);
+    event FundsTransferred(
+        uint256 projectId,
+        address recipient,
+        uint256 amount
+    );
+    event ProjectStatusChanged(uint256 projectId, Status newStatus);
 
     // Function to create a project
     function createProject(
@@ -55,7 +62,8 @@ contract ProjectManager {
                 Status.Open,
                 _projectFee,
                 VERIFICATION_FEE,
-                false // Funds not yet transferred
+                false, // Funds not yet transferred
+                true
             )
         );
 
@@ -71,13 +79,58 @@ contract ProjectManager {
         );
     }
 
+    function updateProjectStatus(uint256 _projectId, Status _newStatus) public {
+        require(_projectId < projects.length, "Project does not exist");
+        Project storage project = projects[_projectId];
+
+        require(
+            msg.sender == project.creator,
+            "Only the project creator can update status"
+        );
+        require(project.isActive, "Project is not active");
+
+        project.status = _newStatus;
+        emit ProjectStatusChanged(_projectId, _newStatus);
+    }
+
+    function removeProject(uint256 _projectId) public {
+        require(_projectId < projects.length, "Project does not exist");
+        Project storage project = projects[_projectId];
+
+        require(
+            msg.sender == project.creator,
+            "Only the project creator can remove the project"
+        );
+        require(
+            project.status == Status.Open,
+            "Only open projects can be removed"
+        );
+
+        // Remove the project by replacing it with the last project in the array
+        // and then reducing the array length
+        if (_projectId != projects.length - 1) {
+            projects[_projectId] = projects[projects.length - 1];
+        }
+
+        // Remove the last element of the array
+        projects.pop();
+
+        emit ProjectRemoved(_projectId, msg.sender);
+    }
+
     // Function to transfer the locked fees to another address
-    function transferFunds(uint256 _projectId, address _freelancer) public payable {
+    function transferFunds(
+        uint256 _projectId,
+        address _freelancer
+    ) public payable {
         require(_projectId < projects.length, "Project does not exist");
 
         Project storage project = projects[_projectId];
 
-        require(msg.sender == project.creator, "Only the creator can transfer funds");
+        require(
+            msg.sender == project.creator,
+            "Only the creator can transfer funds"
+        );
         require(!project.isTransferred, "Funds already transferred");
         uint256 totalFee = project.projectFee + project.verificationFee;
         require(msg.value == totalFee, "Incorrect fee amount sent");
@@ -93,10 +146,12 @@ contract ProjectManager {
     }
 
     // Function to get projects by creator address
-    function getProjectsByAddress(address _creator) public view returns (Project[] memory) {
+    function getProjectsByAddress(
+        address _creator
+    ) public view returns (Project[] memory) {
         uint256 totalCount = 0;
         for (uint256 i = 0; i < projects.length; i++) {
-            if (projects[i].creator == _creator) {
+            if (projects[i].creator == _creator && projects[i].isActive) {
                 totalCount++;
             }
         }
@@ -105,7 +160,7 @@ contract ProjectManager {
         uint256 index = 0;
 
         for (uint256 i = 0; i < projects.length; i++) {
-            if (projects[i].creator == _creator) {
+            if (projects[i].creator == _creator && projects[i].isActive) {
                 result[index] = projects[i];
                 index++;
             }
@@ -114,7 +169,9 @@ contract ProjectManager {
         return result;
     }
     // Getter to retrieve all projects with a specific status
-    function getProjectsByStatus(Status _status) public view returns (Project[] memory) {
+    function getProjectsByStatus(
+        Status _status
+    ) public view returns (Project[] memory) {
         uint256 totalCount = 0;
 
         for (uint256 i = 0; i < projects.length; i++) {

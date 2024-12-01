@@ -197,3 +197,108 @@
 .modal-content button:hover {
   transform: scale(1.05);
 }
+
+/* Remove Project Button */
+.remove-project-button {
+  background: linear-gradient(135deg, #ff4757, #ff6b6b);
+  color: #fff;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.remove-project-button:hover {
+  background: linear-gradient(135deg, #ff6b6b, #ff4757);
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
+}
+
+/* Transfer Funds Button */
+.transfer-funds-button {
+  background: linear-gradient(135deg, #5c24ff, #a55eea);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.transfer-funds-button:disabled {
+  background: linear-gradient(135deg, #4a4a4a, #6c6c6c);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.transfer-funds-button:not(:disabled):hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(92, 36, 255, 0.3);
+}
+
+/* Freelancer Address Input */
+.yprojects-details input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: rgba(30, 30, 30, 0.8);
+  border: 2px solid #5c24ff;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: border-color 0.3s ease;
+}
+
+.yprojects-details input[type="text"]:focus {
+  outline: none;
+  border-color: #ff3bff;
+}
+
+/* Project Description */
+.yprojects-details p {
+  background: rgba(30, 30, 30, 0.5);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  line-height: 1.6;
+  color: #d3d3d3;
+}
+
+/* Status Styling */
+.status {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+.status.open {
+  background-color: #2ecc71;
+  color: #000;
+}
+
+.status.in-progress {
+  background-color: #3498db;
+  color: #fff;
+}
+
+.status.dispute {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.status.completed {
+  background-color: #9b59b6;
+  color: #fff;
+}
+
+.status.unknown {
+  background-color: #95a5a6;
+  color: #fff;
+}

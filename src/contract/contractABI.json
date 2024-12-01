@@ -80,6 +80,44 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "projectId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      }
+    ],
+    "name": "ProjectRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "projectId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ProjectManager.Status",
+        "name": "newStatus",
+        "type": "uint8"
+      }
+    ],
+    "name": "ProjectStatusChanged",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "VERIFICATION_FEE",
     "outputs": [
@@ -176,6 +214,11 @@
             "internalType": "bool",
             "name": "isTransferred",
             "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isActive",
+            "type": "bool"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -242,6 +285,11 @@
             "internalType": "bool",
             "name": "isTransferred",
             "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isActive",
+            "type": "bool"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -306,9 +354,27 @@
         "internalType": "bool",
         "name": "isTransferred",
         "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "isActive",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_projectId",
+        "type": "uint256"
+      }
+    ],
+    "name": "removeProject",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -327,6 +393,24 @@
     "name": "transferFunds",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_projectId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum ProjectManager.Status",
+        "name": "_newStatus",
+        "type": "uint8"
+      }
+    ],
+    "name": "updateProjectStatus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
