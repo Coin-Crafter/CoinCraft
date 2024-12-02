@@ -168,11 +168,14 @@ const ProjectsPage = () => {
                 onClick={() => toggleExpand(project.id)}
               >
                 <h3>{project.title}</h3>
-                <button className="yexpand-button">
-                  <span className="material-icons">
-                    {project.expanded ? "expand_less" : "expand_more"}
-                  </span>
-                </button>
+                <div className="right-section">
+                  {renderProjectStatus(project.status)}
+                  <button className="yexpand-button">
+                    <span className="material-icons">
+                      {project.expanded ? "expand_less" : "expand_more"}
+                    </span>
+                  </button>
+                </div>
               </div>
               {project.expanded && (
                 <div className="yprojects-details">
