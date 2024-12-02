@@ -8,22 +8,27 @@ contract ProjectManager {
         InDispute,
         Completed
     }
+
     struct Project {
         string name;
         string description;
         uint256 timestamp;
         address creator;
         Status status;
+        uint256 projectFee;
     }
 
     Project[] public projects;
+
+    uint256 public verificationFee = 0.0003 ether;
 
     event ProjectCreated(
         string name,
         string description,
         uint256 timestamp,
         address creator,
-        Status status
+        Status status,
+        uint256 projectFee
     );
 
     event ProjectStatusUpdated(
@@ -35,10 +40,32 @@ contract ProjectManager {
     function createProject(
         string memory _name,
         string memory _description,
-        uint256 _timestamp
-    ) public {
-        projects.push(Project(_name, _description, _timestamp, msg.sender, Status.Open));
-        emit ProjectCreated(_name, _description, _timestamp, msg.sender, Status.Open);
+        uint256 _timestamp,
+        uint256 _projectFee
+    ) public payable {
+        require(
+            msg.value == _projectFee + verificationFee,
+            "Incorrect ETH sent"
+        );
+
+        projects.push(
+            Project(
+                _name,
+                _description,
+                _timestamp,
+                msg.sender,
+                Status.Open,
+                _projectFee
+            )
+        );
+        emit ProjectCreated(
+            _name,
+            _description,
+            _timestamp,
+            msg.sender,
+            Status.Open,
+            _projectFee
+        );
     }
 
     function updateProjectStatus(uint256 _projectId, Status _newStatus) public {
@@ -79,7 +106,9 @@ contract ProjectManager {
         return result;
     }
     // Getter to retrieve all projects with a specific status
-    function getProjectsByStatus(Status _status) public view returns (Project[] memory) {
+    function getProjectsByStatus(
+        Status _status
+    ) public view returns (Project[] memory) {
         uint256 totalCount = 0;
 
         for (uint256 i = 0; i < projects.length; i++) {

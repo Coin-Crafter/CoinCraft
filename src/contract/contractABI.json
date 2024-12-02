@@ -31,28 +31,15 @@
         "internalType": "enum ProjectManager.Status",
         "name": "status",
         "type": "uint8"
-      }
-    ],
-    "name": "ProjectCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "projectId",
-        "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "removedBy",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "projectFee",
+        "type": "uint256"
       }
     ],
-    "name": "ProjectRemoved",
+    "name": "ProjectCreated",
     "type": "event"
   },
   {
@@ -96,11 +83,16 @@
         "internalType": "uint256",
         "name": "_timestamp",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_projectFee",
+        "type": "uint256"
       }
     ],
     "name": "createProject",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -139,6 +131,11 @@
             "internalType": "enum ProjectManager.Status",
             "name": "status",
             "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "projectFee",
+            "type": "uint256"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -185,6 +182,11 @@
             "internalType": "enum ProjectManager.Status",
             "name": "status",
             "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "projectFee",
+            "type": "uint256"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -229,22 +231,14 @@
         "internalType": "enum ProjectManager.Status",
         "name": "status",
         "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
+      },
       {
         "internalType": "uint256",
-        "name": "_projectId",
+        "name": "projectFee",
         "type": "uint256"
       }
     ],
-    "name": "removeProject",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -263,6 +257,19 @@
     "name": "updateProjectStatus",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "verificationFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

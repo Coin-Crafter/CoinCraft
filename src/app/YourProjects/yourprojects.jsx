@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./yourprojects.css";
-import { BrowserProvider, Contract } from "ethers";
+import { BrowserProvider, Contract, parseEther, formatEther } from "ethers";
 import contractABI from "../../contract/contractABI.json";
 import { contractAddress } from "../../contract/contractAddress";
 
@@ -9,9 +9,8 @@ const ProjectsPage = () => {
   const [clientProjects, setClientProjects] = useState([]);
   const [freelancerProjects, setFreelancerProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [formData, setFormData] = useState({ name: "", description: "", projectFee: "" });
   const [isLoading, setIsLoading] = useState(false);
-
 
   // Load projects from the blockchain
   const loadProjects = async () => {
@@ -26,15 +25,14 @@ const ProjectsPage = () => {
       const contract = new Contract(contractAddress, contractABI, signer);
 
       const walletAddress = await signer.getAddress();
-      const blockchainProjects = await contract.getProjectsByAddress(
-        walletAddress
-      );
+      const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
 
       const loadedProjects = blockchainProjects.map((project, index) => ({
         id: index + 1,
         title: project.name,
         description: project.description,
-        status: "Open", // Default status for demonstration
+        status: getStatusString(project.status),
+        projectFee: formatEther(project.projectFee),
         expanded: false,
       }));
 
@@ -51,9 +49,7 @@ const ProjectsPage = () => {
   const toggleExpand = (id) => {
     const updateProjects = (prevProjects) =>
       prevProjects.map((project) =>
-        project.id === id
-          ? { ...project, expanded: !project.expanded }
-          : project
+        project.id === id ? { ...project, expanded: !project.expanded } : project
       );
 
     if (activeTab === "client") {
@@ -63,14 +59,13 @@ const ProjectsPage = () => {
     }
   };
 
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCreateProject = async () => {
-    if (!formData.name || !formData.description) {
+    if (!formData.name || !formData.description || !formData.projectFee) {
       alert("Please fill in all fields");
       return;
     }
@@ -88,18 +83,24 @@ const ProjectsPage = () => {
       const contract = new Contract(contractAddress, contractABI, signer);
 
       const timestamp = Math.floor(Date.now() / 1000);
+      const verificationFee = parseEther("0.0003");
+      const projectFee = parseEther(formData.projectFee);
+
+      const totalFee = projectFee + verificationFee;
 
       const tx = await contract.createProject(
         formData.name,
         formData.description,
-        timestamp
+        timestamp,
+        projectFee,
+        { value: totalFee }
       );
 
       await tx.wait();
 
       alert("Project created successfully!");
       loadProjects();
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", projectFee: "" });
       setShowModal(false);
       setIsLoading(false);
     } catch (error) {
@@ -109,13 +110,31 @@ const ProjectsPage = () => {
     }
   };
 
+  function getStatusString(statusCode) {
+    switch (statusCode) {
+      case 0n:
+        return "Open";
+      case 1n:
+        return "In Progress";
+      case 2n:
+        return "In Dispute";
+      case 3n:
+        return "Completed";
+      case 4n:
+        return "Cancelled";
+      default:
+        return "Unknown";
+    }
+  }
+  
+
   const renderProjectStatus = (status) => {
     switch (status) {
       case "Open":
         return <span className="status open">Open</span>;
       case "In Progress":
         return <span className="status in-progress">In Progress</span>;
-      case "Dispute":
+      case "In Dispute":
         return <span className="status dispute">Dispute</span>;
       case "Completed":
         return <span className="status completed">Completed</span>;
@@ -155,36 +174,30 @@ const ProjectsPage = () => {
       )}
 
       <div className="yprojects-list">
-        {(activeTab === "client" ? clientProjects : freelancerProjects).map(
-          (project) => (
-            <div
-              key={project.id}
-              className={`yprojects-card ${
-                project.expanded ? "expanded-card" : ""
-              }`}
-            >
-              <div
-                className="yprojects-header"
-                onClick={() => toggleExpand(project.id)}
-              >
-                <h3>{project.title}</h3>
-                <div className="right-section">
-                  {renderProjectStatus(project.status)}
-                  <button className="yexpand-button">
-                    <span className="material-icons">
-                      {project.expanded ? "expand_less" : "expand_more"}
-                    </span>
-                  </button>
-                </div>
+        {(activeTab === "client" ? clientProjects : freelancerProjects).map((project) => (
+          <div
+            key={project.id}
+            className={`yprojects-card ${project.expanded ? "expanded-card" : ""}`}
+          >
+            <div className="yprojects-header" onClick={() => toggleExpand(project.id)}>
+              <h3>{project.title}</h3>
+              <div className="right-section">
+                {renderProjectStatus(project.status)}
+                <button className="yexpand-button">
+                  <span className="material-icons">
+                    {project.expanded ? "expand_less" : "expand_more"}
+                  </span>
+                </button>
               </div>
-              {project.expanded && (
-                <div className="yprojects-details">
-                  <p>{project.description}</p>
-                </div>
-              )}
             </div>
-          )
-        )}
+            {project.expanded && (
+              <div className="yprojects-details">
+                <p>{project.description}</p>
+                <p>Project Fee: {project.projectFee} ETH</p>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {showModal && (
@@ -204,6 +217,14 @@ const ProjectsPage = () => {
               value={formData.description}
               onChange={handleInputChange}
             />
+            <input
+              type="text"
+              name="projectFee"
+              placeholder="Project Fee (in ETH)"
+              value={formData.projectFee}
+              onChange={handleInputChange}
+            />
+            <p>Verification fee: 0.0003 ETH</p>
             <div className="modal-buttons">
               <button onClick={handleCreateProject} disabled={isLoading}>
                 {isLoading ? "Submitting..." : "Submit"}
