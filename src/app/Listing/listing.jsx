@@ -43,7 +43,7 @@ function Listing() {
     };
 
     fetchOpenProjects();
-  }, []);
+  }, [abi]);
 
   return (
     <div className="listing-page">

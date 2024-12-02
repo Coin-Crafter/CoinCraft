@@ -24,4 +24,5 @@ yarn-error.log*
 .env
 
 #dependencies
+node_modules
 /node_modules
