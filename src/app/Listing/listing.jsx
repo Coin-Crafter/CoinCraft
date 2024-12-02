@@ -24,7 +24,7 @@ function Listing() {
         const contract = new ethers.Contract(contractAddress, abi, signer);
 
         // Fetch projects with status "Open"
-        const statusOpen = 0; // Enum value for "Open"
+        const statusOpen = 0n; // Enum value for "Open"
         const openProjects = await contract.getProjectsByStatus(statusOpen);
 
         // Map raw data into a readable format

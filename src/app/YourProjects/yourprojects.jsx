@@ -27,8 +27,8 @@ const ProjectsPage = () => {
       const walletAddress = await signer.getAddress();
       const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
 
-      const loadedProjects = blockchainProjects.map((project, index) => ({
-        id: index + 1,
+      const loadedProjects = blockchainProjects.map((project) => ({
+        id: Number(project.id),
         title: project.name,
         description: project.description,
         status: getStatusString(project.status),
@@ -62,6 +62,37 @@ const ProjectsPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRemoveProject = async (projectId) => {
+    if (projectId === undefined || projectId === null) {
+      alert("Invalid project identifier");
+      return;
+    }
+
+    try {
+      if (!window.ethereum) {
+        throw new Error("MetaMask is not installed!");
+      }
+
+      setIsLoading(true);
+
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new Contract(contractAddress, contractABI, signer);
+
+      const tx = await contract.removeProject(projectId);
+      await tx.wait();
+
+      alert("Project removed successfully!");
+
+      await loadProjects();
+    } catch (error) {
+      console.error("Error removing project:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCreateProject = async () => {
@@ -120,13 +151,10 @@ const ProjectsPage = () => {
         return "In Dispute";
       case 3n:
         return "Completed";
-      case 4n:
-        return "Cancelled";
       default:
         return "Unknown";
     }
   }
-  
 
   const renderProjectStatus = (status) => {
     switch (status) {
@@ -194,6 +222,11 @@ const ProjectsPage = () => {
               <div className="yprojects-details">
                 <p>{project.description}</p>
                 <p>Project Fee: {project.projectFee} ETH</p>
+                {project.status === "Open" && (
+                  <button className="remove-project-button" onClick={() => handleRemoveProject(project.id)}>
+                    Remove Project
+                  </button>
+                )}
               </div>
             )}
           </div>

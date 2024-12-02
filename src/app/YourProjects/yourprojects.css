@@ -238,3 +238,21 @@
   background-color: #9E9E9E;
   color: white;
 }
+
+.remove-project-button {
+  background: linear-gradient(135deg, #ff4757, #ff6b6b);
+  color: #fff;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+
+.remove-project-button:hover {
+  background: linear-gradient(135deg, #ff6b6b, #ff4757);
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
+}

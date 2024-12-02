@@ -10,6 +10,7 @@ contract ProjectManager {
     }
 
     struct Project {
+        uint256 id;
         string name;
         string description;
         uint256 timestamp;
@@ -23,6 +24,7 @@ contract ProjectManager {
     uint256 public verificationFee = 0.0003 ether;
 
     event ProjectCreated(
+        uint256 projectId,
         string name,
         string description,
         uint256 timestamp,
@@ -30,6 +32,8 @@ contract ProjectManager {
         Status status,
         uint256 projectFee
     );
+
+    event ProjectRemoved(uint256 projectId, address creator);
 
     event ProjectStatusUpdated(
         uint256 projectId,
@@ -48,8 +52,11 @@ contract ProjectManager {
             "Incorrect ETH sent"
         );
 
+        uint256 projectId = projects.length;
+
         projects.push(
             Project(
+                projectId,
                 _name,
                 _description,
                 _timestamp,
@@ -59,6 +66,7 @@ contract ProjectManager {
             )
         );
         emit ProjectCreated(
+            projectId,
             _name,
             _description,
             _timestamp,
@@ -68,20 +76,36 @@ contract ProjectManager {
         );
     }
 
-    function updateProjectStatus(uint256 _projectId, Status _newStatus) public {
-        require(_projectId < projects.length, "Invalid project ID");
+    function removeProject(uint256 _projectId) public {
+        require(_projectId < projects.length, "Project does not exist");
+        Project storage project = projects[_projectId];
+
         require(
-            projects[_projectId].creator == msg.sender,
-            "Only the creator can update the status"
+            msg.sender == project.creator,
+            "Only the project creator can remove the project"
+        );
+        require(
+            project.status == Status.Open,
+            "Only open projects can be removed"
         );
 
-        Status oldStatus = projects[_projectId].status;
-        projects[_projectId].status = _newStatus;
+        uint256 refundAmount = project.projectFee + verificationFee;
 
-        emit ProjectStatusUpdated(_projectId, oldStatus, _newStatus);
+        if (_projectId != projects.length - 1) {
+            projects[_projectId] = projects[projects.length - 1];
+            projects[_projectId].id = _projectId;
+        }
+
+        projects.pop();
+
+        (bool success, ) = payable(msg.sender).call{value: refundAmount}("");
+        require(success, "Refund transfer failed");
+
+        emit ProjectRemoved(_projectId, msg.sender);
     }
 
-    // Getter to retrieve all projects created by the current wallet address
+    // Existing functions...
+
     function getProjectsByAddress(
         address _creator
     ) public view returns (Project[] memory) {
@@ -105,7 +129,7 @@ contract ProjectManager {
 
         return result;
     }
-    // Getter to retrieve all projects with a specific status
+
     function getProjectsByStatus(
         Status _status
     ) public view returns (Project[] memory) {
