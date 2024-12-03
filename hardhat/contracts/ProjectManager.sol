@@ -15,6 +15,7 @@ contract ProjectManager {
         string description;
         uint256 timestamp;
         address creator;
+        address freelancer; // Added freelancer field
         Status status;
         uint256 projectFee;
     }
@@ -61,6 +62,7 @@ contract ProjectManager {
                 _description,
                 _timestamp,
                 msg.sender,
+                address(0), // No freelancer yet
                 Status.Open,
                 _projectFee
             )
@@ -74,6 +76,27 @@ contract ProjectManager {
             Status.Open,
             _projectFee
         );
+    }
+
+    function acceptProject(uint256 _projectId) public payable {
+        require(_projectId < projects.length, "Project does not exist");
+        Project storage project = projects[_projectId];
+
+        require(
+            msg.sender != project.creator,
+            "Creator cannot accept own project"
+        );
+        require(project.status == Status.Open, "Project is not open");
+        require(
+            project.freelancer == address(0),
+            "Project already has a freelancer"
+        );
+        require(msg.value == verificationFee, "Incorrect verification fee");
+
+        project.freelancer = msg.sender;
+        project.status = Status.InProgress;
+
+        emit ProjectStatusUpdated(_projectId, Status.Open, Status.InProgress);
     }
 
     function removeProject(uint256 _projectId) public {
@@ -104,8 +127,6 @@ contract ProjectManager {
         emit ProjectRemoved(_projectId, msg.sender);
     }
 
-    // Existing functions...
-
     function getProjectsByAddress(
         address _creator
     ) public view returns (Project[] memory) {
@@ -122,6 +143,30 @@ contract ProjectManager {
 
         for (uint256 i = 0; i < projects.length; i++) {
             if (projects[i].creator == _creator) {
+                result[index] = projects[i];
+                index++;
+            }
+        }
+
+        return result;
+    }
+
+    function getProjectsForFreelancer(
+        address _freelancer
+    ) public view returns (Project[] memory) {
+        uint256 totalCount = 0;
+
+        for (uint256 i = 0; i < projects.length; i++) {
+            if (projects[i].freelancer == _freelancer) {
+                totalCount++;
+            }
+        }
+
+        Project[] memory result = new Project[](totalCount);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < projects.length; i++) {
+            if (projects[i].freelancer == _freelancer) {
                 result[index] = projects[i];
                 index++;
             }

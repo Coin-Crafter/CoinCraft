@@ -25,18 +25,34 @@ const ProjectsPage = () => {
       const contract = new Contract(contractAddress, contractABI, signer);
 
       const walletAddress = await signer.getAddress();
-      const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
 
-      const loadedProjects = blockchainProjects.map((project) => ({
-        id: Number(project.id),
-        title: project.name,
-        description: project.description,
-        status: getStatusString(project.status),
-        projectFee: formatEther(project.projectFee),
-        expanded: false,
-      }));
+      if (activeTab === "client") {
+        const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
 
-      setClientProjects(loadedProjects);
+        const loadedProjects = blockchainProjects.map((project) => ({
+          id: Number(project.id),
+          title: project.name,
+          description: project.description,
+          status: getStatusString(project.status),
+          projectFee: formatEther(project.projectFee),
+          expanded: false,
+        }));
+
+        setClientProjects(loadedProjects);
+      } else if (activeTab === "freelancer") {
+        const blockchainProjects = await contract.getProjectsForFreelancer(walletAddress);
+
+        const loadedProjects = blockchainProjects.map((project) => ({
+          id: Number(project.id),
+          title: project.name,
+          description: project.description,
+          status: getStatusString(project.status),
+          projectFee: formatEther(project.projectFee),
+          expanded: false,
+        }));
+
+        setFreelancerProjects(loadedProjects);
+      }
     } catch (error) {
       console.error("Error loading projects:", error);
     }
@@ -44,7 +60,7 @@ const ProjectsPage = () => {
 
   useEffect(() => {
     loadProjects();
-  }, []);
+  }, [activeTab]);
 
   const toggleExpand = (id) => {
     const updateProjects = (prevProjects) =>
@@ -163,7 +179,7 @@ const ProjectsPage = () => {
       case "In Progress":
         return <span className="status in-progress">In Progress</span>;
       case "In Dispute":
-        return <span className="status dispute">Dispute</span>;
+        return <span className="status dispute">In Dispute</span>;
       case "Completed":
         return <span className="status completed">Completed</span>;
       default:
@@ -221,8 +237,8 @@ const ProjectsPage = () => {
             {project.expanded && (
               <div className="yprojects-details">
                 <p>{project.description}</p>
-                <p>Project Fee: {project.projectFee} ETH</p>
-                {project.status === "Open" && (
+                {/* Only show the remove button for client projects */}
+                {activeTab === "client" && project.status === "Open" && (
                   <button className="remove-project-button" onClick={() => handleRemoveProject(project.id)}>
                     Remove Project
                   </button>

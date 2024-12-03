@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import ProjectCard from "./ProjectCard"; // Import card component
 import "./listing.css"; // Import styles
-import ProjectManagerABI from "../../contract/contractABI.json"; 
+import ProjectManagerABI from "../../contract/contractABI.json";
 import { contractAddress } from "../../contract/contractAddress";
 
 function Listing() {
@@ -29,9 +29,11 @@ function Listing() {
 
         // Map raw data into a readable format
         const formattedProjects = openProjects.map((project) => ({
+          id: Number(project.id),
           title: project.name,
           description: project.description,
-          stipend: ethers.formatUnits(project.stipend || "0", "ether"),
+          projectFee: ethers.formatUnits(project.projectFee || "0", "ether"),
+          creator: project.creator,
         }));
 
         setProjects(formattedProjects);
@@ -54,12 +56,14 @@ function Listing() {
         {loading ? (
           <p>Loading projects...</p>
         ) : projects.length > 0 ? (
-          projects.map((project, index) => (
+          projects.map((project) => (
             <ProjectCard
-              key={index}
+              key={project.id}
+              projectId={project.id}
               title={project.title}
               description={project.description}
-              stipend={project.stipend}
+              projectFee={project.projectFee}
+              creator={project.creator}
             />
           ))
         ) : (

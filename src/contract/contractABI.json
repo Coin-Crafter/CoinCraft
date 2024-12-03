@@ -95,6 +95,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_projectId",
+        "type": "uint256"
+      }
+    ],
+    "name": "acceptProject",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_name",
         "type": "string"
@@ -158,6 +171,11 @@
             "type": "address"
           },
           {
+            "internalType": "address",
+            "name": "freelancer",
+            "type": "address"
+          },
+          {
             "internalType": "enum ProjectManager.Status",
             "name": "status",
             "type": "uint8"
@@ -214,6 +232,72 @@
             "type": "address"
           },
           {
+            "internalType": "address",
+            "name": "freelancer",
+            "type": "address"
+          },
+          {
+            "internalType": "enum ProjectManager.Status",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "projectFee",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ProjectManager.Project[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_freelancer",
+        "type": "address"
+      }
+    ],
+    "name": "getProjectsForFreelancer",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "creator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "freelancer",
+            "type": "address"
+          },
+          {
             "internalType": "enum ProjectManager.Status",
             "name": "status",
             "type": "uint8"
@@ -265,6 +349,11 @@
       {
         "internalType": "address",
         "name": "creator",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "freelancer",
         "type": "address"
       },
       {
