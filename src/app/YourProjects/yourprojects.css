@@ -223,6 +223,10 @@
   background-color: #FF9800;
   color: white;
 }
+.status.waiting {
+  background-color: #FF9800;
+  color: white;
+}
 
 .status.dispute {
   background-color: #f44336;
@@ -255,4 +259,94 @@
   background: linear-gradient(135deg, #ff6b6b, #ff4757);
   transform: scale(1.05);
   box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
+}
+
+.mark-completed-button {
+  background: linear-gradient(135deg, #4CAF50, #81C784);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  margin-top: 10px;
+  min-width: 180px;
+  text-align: center;
+}
+
+.mark-completed-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+}
+
+.mark-completed-button:disabled {
+  background: linear-gradient(135deg, #A5D6A7, #C8E6C9);
+  color: #ffffff90;
+  /* Lighter text for disabled state */
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Approve Button */
+.approve-button {
+  background: linear-gradient(135deg, #4CAF50, #81C784);
+  /* Green tones for approval */
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  margin: 10px 5px;
+  min-width: 180px;
+  text-align: center;
+}
+
+.approve-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+  /* Green glow effect */
+}
+
+.approve-button:disabled {
+  background: linear-gradient(135deg, #A5D6A7, #C8E6C9);
+  /* Muted green tones */
+  color: #ffffff90;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Dispute Button */
+.dispute-button {
+  background: linear-gradient(135deg, #f44336, #E57373);
+  /* Red tones for dispute */
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  margin: 10px 5px;
+  min-width: 180px;
+  text-align: center;
+}
+
+.dispute-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(244, 67, 54, 0.4);
+  /* Red glow effect */
+}
+
+.dispute-button:disabled {
+  background: linear-gradient(135deg, #EF9A9A, #FFCDD2);
+  /* Muted red tones */
+  color: #ffffff90;
+  cursor: not-allowed;
+  opacity: 0.6;
 }

@@ -5,6 +5,7 @@ contract ProjectManager {
     enum Status {
         Open,
         InProgress,
+        WaitingForApproval,
         InDispute,
         Completed
     }
@@ -41,6 +42,146 @@ contract ProjectManager {
         Status oldStatus,
         Status newStatus
     );
+
+    function markProjectAsCompleted(uint256 _projectId) public {
+        require(_projectId < projects.length, "Project does not exist");
+        Project storage project = projects[_projectId];
+
+        require(
+            msg.sender == project.freelancer,
+            "Only the freelancer can mark project as completed"
+        );
+        require(
+            project.status == Status.InProgress,
+            "Project must be in progress"
+        );
+
+        project.status = Status.WaitingForApproval;
+
+        emit ProjectStatusUpdated(
+            _projectId,
+            Status.InProgress,
+            Status.WaitingForApproval
+        );
+    }
+
+    function approveProjectCompletion(uint256 _projectId) public {
+        require(_projectId < projects.length, "Project does not exist");
+        Project storage project = projects[_projectId];
+
+        require(
+            msg.sender == project.creator,
+            "Only the project creator can approve completion"
+        );
+        require(
+            project.status == Status.WaitingForApproval,
+            "Project must be waiting for approval"
+        );
+
+        project.status = Status.Completed;
+
+        // Transfer project fee to freelancer
+        (bool success, ) = payable(project.freelancer).call{
+            value: project.projectFee + verificationFee
+        }("");
+        require(success, "Fee transfer to freelancer failed");
+
+        // Return verification fee to client
+        (bool successClient, ) = payable(project.creator).call{
+            value: verificationFee
+        }("");
+        require(successClient, "Verification fee refund to client failed");
+
+        emit ProjectStatusUpdated(
+            _projectId,
+            Status.WaitingForApproval,
+            Status.Completed
+        );
+    }
+
+    function disputeProjectCompletion(uint256 _projectId) public {
+        require(_projectId < projects.length, "Project does not exist");
+        Project storage project = projects[_projectId];
+
+        require(
+            msg.sender == project.creator,
+            "Only the project creator can dispute completion"
+        );
+        require(
+            project.status == Status.WaitingForApproval,
+            "Project must be waiting for approval"
+        );
+
+        project.status = Status.InDispute;
+
+        emit ProjectStatusUpdated(
+            _projectId,
+            Status.WaitingForApproval,
+            Status.InDispute
+        );
+    }
+
+    function verifyProjectCompletion(uint256 _projectId) public {
+        require(_projectId < projects.length, "Project does not exist");
+        Project storage project = projects[_projectId];
+
+        require(
+            msg.sender != project.creator && msg.sender != project.freelancer,
+            "Verifier cannot be project creator or freelancer"
+        );
+        require(
+            project.status == Status.InDispute,
+            "Project must be in dispute"
+        );
+
+        project.status = Status.Completed;
+
+        // Transfer project fee + verification fee to freelancer
+        (bool successFreelancer, ) = payable(project.freelancer).call{
+            value: project.projectFee + verificationFee
+        }("");
+        require(successFreelancer, "Fee transfer to freelancer failed");
+
+        // Transfer 1/3 of verification fee to verifier
+        uint256 verifierFee = verificationFee / 3;
+        (bool successVerifier, ) = payable(msg.sender).call{value: verifierFee}(
+            ""
+        );
+        require(successVerifier, "Verifier fee transfer failed");
+
+        emit ProjectStatusUpdated(
+            _projectId,
+            Status.InDispute,
+            Status.Completed
+        );
+    }
+
+    function rejectProjectCompletion(uint256 _projectId) public {
+        require(_projectId < projects.length, "Project does not exist");
+        Project storage project = projects[_projectId];
+
+        require(
+            msg.sender != project.creator && msg.sender != project.freelancer,
+            "Verifier cannot be project creator or freelancer"
+        );
+        require(
+            project.status == Status.InDispute,
+            "Project must be in dispute"
+        );
+
+        // Reset project to Open and remove freelancer
+        project.status = Status.Open;
+        project.freelancer = address(0);
+
+        // Transfer 1/3 of verification fee to verifier
+        uint256 verifierFee = verificationFee / 3;
+        (bool successVerifier, ) = payable(msg.sender).call{value: verifierFee}(
+            ""
+        );
+        require(successVerifier, "Verifier fee transfer failed");
+
+        emit ProjectStatusUpdated(_projectId, Status.InDispute, Status.Open);
+    }
 
     function createProject(
         string memory _name,

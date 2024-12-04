@@ -80,6 +80,66 @@ const ProjectsPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleMarkProjectCompleted = async (projectId) => {
+    try {
+      setIsLoading(true);
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new Contract(contractAddress, contractABI, signer);
+
+      const tx = await contract.markProjectAsCompleted(projectId);
+      await tx.wait();
+
+      alert("Project marked as completed and waiting for client approval!");
+      await loadProjects();
+    } catch (error) {
+      console.error("Error marking project as completed:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleApproveProjectCompletion = async (projectId) => {
+    try {
+      setIsLoading(true);
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new Contract(contractAddress, contractABI, signer);
+
+      const tx = await contract.approveProjectCompletion(projectId);
+      await tx.wait();
+
+      alert("Project completion approved!");
+      await loadProjects();
+    } catch (error) {
+      console.error("Error approving project completion:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDisputeProjectCompletion = async (projectId) => {
+    try {
+      setIsLoading(true);
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new Contract(contractAddress, contractABI, signer);
+
+      const tx = await contract.disputeProjectCompletion(projectId);
+      await tx.wait();
+
+      alert("Project completion disputed and sent to verification!");
+      await loadProjects();
+    } catch (error) {
+      console.error("Error disputing project completion:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const handleRemoveProject = async (projectId) => {
     if (projectId === undefined || projectId === null) {
       alert("Invalid project identifier");
@@ -164,8 +224,10 @@ const ProjectsPage = () => {
       case 1n:
         return "In Progress";
       case 2n:
-        return "In Dispute";
+        return "Waiting For Approval";
       case 3n:
+        return "In Dispute";
+      case 4n:
         return "Completed";
       default:
         return "Unknown";
@@ -178,6 +240,8 @@ const ProjectsPage = () => {
         return <span className="status open">Open</span>;
       case "In Progress":
         return <span className="status in-progress">In Progress</span>;
+      case "Waiting For Approval":
+        return <span className="status waiting">Waiting for Approval</span>;
       case "In Dispute":
         return <span className="status dispute">In Dispute</span>;
       case "Completed":
@@ -237,6 +301,40 @@ const ProjectsPage = () => {
             {project.expanded && (
               <div className="yprojects-details">
                 <p>{project.description}</p>
+                {/* Freelancer: Mark Project as Completed */}
+                {activeTab === "freelancer" && 
+                 project.status === "In Progress" && (
+                  <button 
+                    className="mark-completed-button" 
+                    onClick={() => handleMarkProjectCompleted(project.id)}
+                    disabled={isLoading}
+                  >
+                    Mark Project Completed
+                  </button>
+                )}
+
+                {/* Client: Approve or Dispute Project */}
+                {activeTab === "client" && 
+                 project.status === "Waiting For Approval" && (
+                  <div className="project-approval-buttons">
+                    <button 
+                      className="approve-button" 
+                      onClick={() => handleApproveProjectCompletion(project.id)}
+                      disabled={isLoading}
+                    >
+                      Approve Completion
+                    </button>
+                    <button 
+                      className="dispute-button" 
+                      onClick={() => handleDisputeProjectCompletion(project.id)}
+                      disabled={isLoading}
+                    >
+                      Dispute Completion
+                    </button>
+                  </div>
+                )}
+
+                
                 {/* Only show the remove button for client projects */}
                 {activeTab === "client" && project.status === "Open" && (
                   <button className="remove-project-button" onClick={() => handleRemoveProject(project.id)}>
