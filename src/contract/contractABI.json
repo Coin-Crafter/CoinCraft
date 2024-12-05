@@ -93,6 +93,44 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "projectId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "verifier",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "vote",
+        "type": "bool"
+      }
+    ],
+    "name": "VerifierVoted",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "REQUIRED_VERIFIERS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -210,6 +248,16 @@
             "internalType": "uint256",
             "name": "projectFee",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "acceptVotes",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rejectVotes",
+            "type": "uint256"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -270,6 +318,16 @@
           {
             "internalType": "uint256",
             "name": "projectFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "acceptVotes",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rejectVotes",
             "type": "uint256"
           }
         ],
@@ -332,11 +390,45 @@
             "internalType": "uint256",
             "name": "projectFee",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "acceptVotes",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rejectVotes",
+            "type": "uint256"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
         "name": "",
         "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "hasVerified",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -353,6 +445,30 @@
     "name": "markProjectAsCompleted",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "projectVerifiers",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -404,6 +520,16 @@
         "internalType": "uint256",
         "name": "projectFee",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "acceptVotes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rejectVotes",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -452,13 +578,42 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "verifierVotes",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_projectId",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_accept",
+        "type": "bool"
       }
     ],
     "name": "verifyProjectCompletion",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   }
 ]

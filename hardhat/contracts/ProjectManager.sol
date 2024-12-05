@@ -16,13 +16,15 @@ contract ProjectManager {
         string description;
         uint256 timestamp;
         address creator;
-        address freelancer; // Added freelancer field
+        address freelancer;
         Status status;
         uint256 projectFee;
+        uint256 acceptVotes;
+        uint256 rejectVotes;
     }
 
     Project[] public projects;
-
+    uint256 public constant REQUIRED_VERIFIERS = 3;
     uint256 public verificationFee = 0.0003 ether;
 
     event ProjectCreated(
@@ -42,6 +44,17 @@ contract ProjectManager {
         Status oldStatus,
         Status newStatus
     );
+
+    event VerifierVoted(uint256 projectId, address verifier, bool vote);
+
+    modifier onlyValidProject(uint256 _projectId) {
+        require(_projectId < projects.length, "Project does not exist");
+        _;
+    }
+
+    mapping(uint256 => address[]) public projectVerifiers; // Tracks verifiers
+    mapping(uint256 => mapping(address => bool)) public hasVerified; // Tracks if a verifier has voted
+    mapping(uint256 => mapping(address => bool)) public verifierVotes; // Verifier's vote
 
     function markProjectAsCompleted(uint256 _projectId) public {
         require(_projectId < projects.length, "Project does not exist");
@@ -113,6 +126,16 @@ contract ProjectManager {
         );
 
         project.status = Status.InDispute;
+        project.acceptVotes = 0;
+        project.rejectVotes = 0;
+
+        // Reset hasVerified mapping for all verifiers
+        for (uint256 i = 0; i < projectVerifiers[_projectId].length; i++) {
+            hasVerified[_projectId][projectVerifiers[_projectId][i]] = false;
+        }
+
+        // Clear the verifiers array
+        delete projectVerifiers[_projectId];
 
         emit ProjectStatusUpdated(
             _projectId,
@@ -121,8 +144,10 @@ contract ProjectManager {
         );
     }
 
-    function verifyProjectCompletion(uint256 _projectId) public {
-        require(_projectId < projects.length, "Project does not exist");
+    function verifyProjectCompletion(
+        uint256 _projectId,
+        bool _accept
+    ) public payable onlyValidProject(_projectId) {
         Project storage project = projects[_projectId];
 
         require(
@@ -133,27 +158,65 @@ contract ProjectManager {
             project.status == Status.InDispute,
             "Project must be in dispute"
         );
+        require(
+            !hasVerified[_projectId][msg.sender],
+            "Verifier has already voted"
+        );
+        require(msg.value == verificationFee, "Incorrect verification fee");
 
+        hasVerified[_projectId][msg.sender] = true;
+        projectVerifiers[_projectId].push(msg.sender);
+
+        if (_accept) {
+            project.acceptVotes++;
+        } else {
+            project.rejectVotes++;
+        }
+
+        uint256 verifierReward = verificationFee / 3;
+        uint256 refundAmount = verificationFee + verifierReward;
+
+        (bool success, ) = payable(msg.sender).call{value: refundAmount}("");
+        require(success, "Verifier reward transfer failed");
+
+        emit VerifierVoted(_projectId, msg.sender, _accept);
+
+        if (projectVerifiers[_projectId].length == REQUIRED_VERIFIERS) {
+            if (project.acceptVotes >= 2) {
+                completeProject(_projectId);
+            } else if (project.rejectVotes >= 2) {
+                reopenProject(_projectId);
+            }
+        }
+    }
+
+    function completeProject(uint256 _projectId) private {
+        Project storage project = projects[_projectId];
         project.status = Status.Completed;
 
-        // Transfer project fee + verification fee to freelancer
-        (bool successFreelancer, ) = payable(project.freelancer).call{
+        (bool freelancerPaid, ) = payable(project.freelancer).call{
             value: project.projectFee + verificationFee
         }("");
-        require(successFreelancer, "Fee transfer to freelancer failed");
-
-        // Transfer 1/3 of verification fee to verifier
-        uint256 verifierFee = verificationFee / 3;
-        (bool successVerifier, ) = payable(msg.sender).call{value: verifierFee}(
-            ""
-        );
-        require(successVerifier, "Verifier fee transfer failed");
+        require(freelancerPaid, "Freelancer payment failed");
 
         emit ProjectStatusUpdated(
             _projectId,
             Status.InDispute,
             Status.Completed
         );
+    }
+
+    function reopenProject(uint256 _projectId) private {
+        Project storage project = projects[_projectId];
+
+        project.status = Status.Open;
+        project.freelancer = address(0);
+        project.acceptVotes = 0;
+        project.rejectVotes = 0;
+
+        delete projectVerifiers[_projectId];
+
+        emit ProjectStatusUpdated(_projectId, Status.InDispute, Status.Open);
     }
 
     function rejectProjectCompletion(uint256 _projectId) public {
@@ -174,11 +237,11 @@ contract ProjectManager {
         project.freelancer = address(0);
 
         // Transfer 1/3 of verification fee to verifier
-        uint256 verifierFee = verificationFee / 3;
-        (bool successVerifier, ) = payable(msg.sender).call{value: verifierFee}(
-            ""
-        );
-        require(successVerifier, "Verifier fee transfer failed");
+        // uint256 verifierFee = verificationFee / 3;
+        // (bool successVerifier, ) = payable(msg.sender).call{value: verifierFee}(
+        //     ""
+        // );
+        // require(successVerifier, "Verifier fee transfer failed");
 
         emit ProjectStatusUpdated(_projectId, Status.InDispute, Status.Open);
     }
@@ -205,7 +268,9 @@ contract ProjectManager {
                 msg.sender,
                 address(0), // No freelancer yet
                 Status.Open,
-                _projectFee
+                _projectFee,
+                0,
+                0
             )
         );
         emit ProjectCreated(
@@ -219,8 +284,9 @@ contract ProjectManager {
         );
     }
 
-    function acceptProject(uint256 _projectId) public payable {
-        require(_projectId < projects.length, "Project does not exist");
+    function acceptProject(
+        uint256 _projectId
+    ) public payable onlyValidProject(_projectId) {
         Project storage project = projects[_projectId];
 
         require(

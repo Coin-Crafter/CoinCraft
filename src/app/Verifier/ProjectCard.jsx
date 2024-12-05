@@ -1,13 +1,32 @@
-import React , {useState} from "react";
-import "./verifier.css"; // Import styles
-import { ethers } from "ethers";
+import React, { useState, useEffect } from "react";
+import "./verifier.css";
+import { parseUnits, ethers } from "ethers";
 import ProjectManagerABI from "../../contract/contractABI.json";
 import { contractAddress } from "../../contract/contractAddress";
 
 function VerifierProjectCard({ projectId, title, description, projectFee, creator, freelancer }) {
-  const [isResolving, setIsResolving] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
+  const [verificationFee, setVerificationFee] = useState(null);
 
-  const handleResolveDispute = async () => {
+  useEffect(() => {
+    const fetchVerificationFee = async () => {
+      try {
+        if (!window.ethereum) return;
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const contract = new ethers.Contract(contractAddress, ProjectManagerABI, provider);
+        
+        const fee = await contract.verificationFee();
+        setVerificationFee(fee);
+      } catch (error) {
+        console.error("Error fetching verification fee:", error);
+      }
+    };
+
+    fetchVerificationFee();
+  }, []);
+
+  const handleVote = async (accept) => {
     try {
       if (!window.ethereum) {
         alert("MetaMask is not installed!");
@@ -21,34 +40,28 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
       const currentAddress = await signer.getAddress();
       if (currentAddress.toLowerCase() === creator.toLowerCase() || 
           currentAddress.toLowerCase() === freelancer.toLowerCase()) {
-        alert("You cannot resolve a dispute for your own project");
+        alert("You cannot verify a project for your own project");
         return;
       }
 
-      setIsResolving(true);
-      const userChoice = window.confirm("Do you want to accept the project completion? \n\nClick 'OK' to ACCEPT or 'Cancel' to REJECT.");
+      setIsVoting(true);
       
       try {
-        if (userChoice) {
-          // Call verifyProjectCompletion to accept
-          const tx = await contract.verifyProjectCompletion(projectId);
-          await tx.wait();
-          alert("Project successfully marked as completed!");
-        } else {
-          // Call rejectProjectCompletion to reject
-          const tx = await contract.rejectProjectCompletion(projectId);
-          await tx.wait();
-          alert("Project has been reopened and freelancer removed.");
-        }
+        const tx = await contract.verifyProjectCompletion(projectId, accept, {
+          value: verificationFee  // Use the exact verification fee from the contract
+        });
+        await tx.wait();
+        
+        alert(accept ? "Project vote submitted to ACCEPT" : "Project vote submitted to REJECT");
       } catch (error) {
         console.error("Transaction error:", error);
         alert(`Error: ${error.message}`);
       }
     } catch (error) {
-      console.error("Error resolving dispute:", error);
-      alert("Error resolving dispute. Please try again.");
+      console.error("Error voting:", error);
+      alert("Error voting. Please try again.");
     } finally {
-      setIsResolving(false);
+      setIsVoting(false);
     }
   };
 
@@ -62,17 +75,34 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
       <h2 className="project-title">{title}</h2>
       <p className="project-description">{description}</p>
       <div>
-        <span className="project-stipend">Verification Fee: {(projectFee / 3).toFixed(4)} ETH</span>
+        <span className="project-stipend">
+        Verification Fee: {verificationFee 
+          ? ethers.formatUnits(verificationFee, 18) 
+          : 'Loading...'} ETH
+      </span>
         <br />
         <span>Creator: {creator.slice(0, 6)}...{creator.slice(-4)}</span>
         <br />
         <span>Freelancer: {freelancer.slice(0, 6)}...{freelancer.slice(-4)}</span>
       </div>
       <br />
-      <div className="button-gradient-wrapper">
-        <div className="button-inner-wrapper">
-          <button className="gradient-button" onClick={handleResolveDispute} disabled={isResolving}>
-            {isResolving ? 'Processing...' : 'Resolve Dispute'}
+      <div className="button-container">
+        <div className="button-gradient-wrapper">
+          <button 
+            className="gradient-button accept" 
+            onClick={() => handleVote(true)} 
+            disabled={isVoting}
+          >
+            {isVoting ? 'Processing...' : 'Accept Project'}
+          </button>
+        </div>
+        <div className="button-gradient-wrapper">
+          <button 
+            className="gradient-button reject" 
+            onClick={() => handleVote(false)} 
+            disabled={isVoting}
+          >
+            {isVoting ? 'Processing...' : 'Reject Project'}
           </button>
         </div>
       </div>
