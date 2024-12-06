@@ -1,16 +1,28 @@
-import React from "react";
-import "./listing.css"; // Import styles
+import React, { useState, useEffect } from "react";
+import "./listing.css";
 import { ethers } from "ethers";
 import ProjectManagerABI from "../../contract/contractABI.json";
 import { contractAddress } from "../../contract/contractAddress";
 
-function ProjectCard({ projectId, title, description, projectFee, creator }) {
+function ProjectCard({ 
+  projectId, 
+  title, 
+  description, 
+  projectFee, 
+  creator,
+  onProjectAccepted 
+}) {
+  const [potentialFreelancers, setPotentialFreelancers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleAcceptProject = async () => {
     try {
       if (!window.ethereum) {
         alert("MetaMask is not installed!");
         return;
       }
+
+      setIsLoading(true);
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -28,11 +40,16 @@ function ProjectCard({ projectId, title, description, projectFee, creator }) {
       await tx.wait();
 
       alert("Project accepted successfully!");
-
-      // Optionally, refresh the project list or remove the accepted project from the UI
+      
+      // Optionally refresh potential freelancers or update parent component
+      if (onProjectAccepted) {
+        onProjectAccepted(projectId);
+      }
     } catch (error) {
       console.error("Error accepting project:", error);
       alert("Error accepting project. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -51,8 +68,12 @@ function ProjectCard({ projectId, title, description, projectFee, creator }) {
       <br />
       <div className="button-gradient-wrapper">
         <div className="button-inner-wrapper">
-          <button className="gradient-button" onClick={handleAcceptProject}>
-            Accept Project
+          <button 
+            className="gradient-button" 
+            onClick={handleAcceptProject}
+            disabled={isLoading}
+          >
+            {isLoading ? "Accepting..." : "Accept Project"}
           </button>
         </div>
       </div>

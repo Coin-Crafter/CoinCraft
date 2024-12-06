@@ -16,7 +16,9 @@ contract ProjectManager {
         string description;
         uint256 timestamp;
         address creator;
-        address freelancer;
+        // address freelancer;
+        address[] potentialFreelancers;
+        address selectedFreelancer;
         Status status;
         uint256 projectFee;
         uint256 acceptVotes;
@@ -45,6 +47,8 @@ contract ProjectManager {
         Status newStatus
     );
 
+    event FreelancerAccepted(uint256 projectId, address freelancer);
+
     event VerifierVoted(uint256 projectId, address verifier, bool vote);
 
     modifier onlyValidProject(uint256 _projectId) {
@@ -55,13 +59,15 @@ contract ProjectManager {
     mapping(uint256 => address[]) public projectVerifiers; // Tracks verifiers
     mapping(uint256 => mapping(address => bool)) public hasVerified; // Tracks if a verifier has voted
     mapping(uint256 => mapping(address => bool)) public verifierVotes; // Verifier's vote
+    mapping(uint256 => mapping(address => bool))
+        public freelancerAcceptedProjects;
 
     function markProjectAsCompleted(uint256 _projectId) public {
         require(_projectId < projects.length, "Project does not exist");
         Project storage project = projects[_projectId];
 
         require(
-            msg.sender == project.freelancer,
+            msg.sender == project.selectedFreelancer,
             "Only the freelancer can mark project as completed"
         );
         require(
@@ -94,7 +100,7 @@ contract ProjectManager {
         project.status = Status.Completed;
 
         // Transfer project fee to freelancer
-        (bool success, ) = payable(project.freelancer).call{
+        (bool success, ) = payable(project.selectedFreelancer).call{
             value: project.projectFee + verificationFee
         }("");
         require(success, "Fee transfer to freelancer failed");
@@ -151,7 +157,8 @@ contract ProjectManager {
         Project storage project = projects[_projectId];
 
         require(
-            msg.sender != project.creator && msg.sender != project.freelancer,
+            msg.sender != project.creator &&
+                msg.sender != project.selectedFreelancer,
             "Verifier cannot be project creator or freelancer"
         );
         require(
@@ -194,7 +201,7 @@ contract ProjectManager {
         Project storage project = projects[_projectId];
         project.status = Status.Completed;
 
-        (bool freelancerPaid, ) = payable(project.freelancer).call{
+        (bool freelancerPaid, ) = payable(project.selectedFreelancer).call{
             value: project.projectFee + verificationFee
         }("");
         require(freelancerPaid, "Freelancer payment failed");
@@ -210,7 +217,7 @@ contract ProjectManager {
         Project storage project = projects[_projectId];
 
         project.status = Status.Open;
-        project.freelancer = address(0);
+        project.selectedFreelancer = address(0);
         project.acceptVotes = 0;
         project.rejectVotes = 0;
 
@@ -224,7 +231,8 @@ contract ProjectManager {
         Project storage project = projects[_projectId];
 
         require(
-            msg.sender != project.creator && msg.sender != project.freelancer,
+            msg.sender != project.creator &&
+                msg.sender != project.selectedFreelancer,
             "Verifier cannot be project creator or freelancer"
         );
         require(
@@ -234,7 +242,7 @@ contract ProjectManager {
 
         // Reset project to Open and remove freelancer
         project.status = Status.Open;
-        project.freelancer = address(0);
+        project.selectedFreelancer = address(0);
 
         // Transfer 1/3 of verification fee to verifier
         // uint256 verifierFee = verificationFee / 3;
@@ -266,6 +274,7 @@ contract ProjectManager {
                 _description,
                 _timestamp,
                 msg.sender,
+                new address[](0),
                 address(0), // No freelancer yet
                 Status.Open,
                 _projectFee,
@@ -295,13 +304,46 @@ contract ProjectManager {
         );
         require(project.status == Status.Open, "Project is not open");
         require(
-            project.freelancer == address(0),
-            "Project already has a freelancer"
+            !freelancerAcceptedProjects[_projectId][msg.sender],
+            "Freelancer has already accepted this project"
         );
         require(msg.value == verificationFee, "Incorrect verification fee");
 
-        project.freelancer = msg.sender;
+        // Add freelancer to potential freelancers
+        project.potentialFreelancers.push(msg.sender);
+        freelancerAcceptedProjects[_projectId][msg.sender] = true;
+
+        emit FreelancerAccepted(_projectId, msg.sender);
+    }
+
+    function selectFreelancer(uint256 _projectId, address _freelancer) public {
+        Project storage project = projects[_projectId];
+
+        require(
+            msg.sender == project.creator,
+            "Only project creator can select a freelancer"
+        );
+        require(project.status == Status.Open, "Project is not open");
+        require(
+            freelancerAcceptedProjects[_projectId][_freelancer],
+            "Freelancer has not accepted this project"
+        );
+
+        // Select the freelancer and change project status
+        project.selectedFreelancer = _freelancer;
         project.status = Status.InProgress;
+
+        delete project.potentialFreelancers;
+        // Refund verification fees to unselected freelancers
+        for (uint i = 0; i < project.potentialFreelancers.length; i++) {
+            address potentialFreelancer = project.potentialFreelancers[i];
+            if (potentialFreelancer != _freelancer) {
+                (bool success, ) = payable(potentialFreelancer).call{
+                    value: verificationFee
+                }("");
+                require(success, "Refund to unselected freelancer failed");
+            }
+        }
 
         emit ProjectStatusUpdated(_projectId, Status.Open, Status.InProgress);
     }
@@ -320,6 +362,14 @@ contract ProjectManager {
         );
 
         uint256 refundAmount = project.projectFee + verificationFee;
+
+        // Refund verification fees to all potential freelancers
+        for (uint i = 0; i < project.potentialFreelancers.length; i++) {
+            (bool freelancerRefundSuccess, ) = payable(
+                project.potentialFreelancers[i]
+            ).call{value: verificationFee}("");
+            require(freelancerRefundSuccess, "Refund to freelancer failed");
+        }
 
         if (_projectId != projects.length - 1) {
             projects[_projectId] = projects[projects.length - 1];
@@ -364,7 +414,7 @@ contract ProjectManager {
         uint256 totalCount = 0;
 
         for (uint256 i = 0; i < projects.length; i++) {
-            if (projects[i].freelancer == _freelancer) {
+            if (projects[i].selectedFreelancer == _freelancer) {
                 totalCount++;
             }
         }
@@ -373,7 +423,7 @@ contract ProjectManager {
         uint256 index = 0;
 
         for (uint256 i = 0; i < projects.length; i++) {
-            if (projects[i].freelancer == _freelancer) {
+            if (projects[i].selectedFreelancer == _freelancer) {
                 result[index] = projects[i];
                 index++;
             }

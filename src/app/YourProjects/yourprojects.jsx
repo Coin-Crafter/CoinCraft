@@ -11,56 +11,109 @@ const ProjectsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: "", description: "", projectFee: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [potentialFreelancers, setPotentialFreelancers] = useState([]);
 
   // Load projects from the blockchain
   const loadProjects = async () => {
-    try {
-      if (!window.ethereum) {
-        alert("MetaMask is not installed!");
-        return;
-      }
+  try {
+    if (!window.ethereum) {
+      alert("MetaMask is not installed!");
+      return;
+    }
 
+    const provider = new BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new Contract(contractAddress, contractABI, signer);
+
+    const walletAddress = await signer.getAddress();
+
+    if (activeTab === "client") {
+      const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
+
+      const loadedProjects = await Promise.all(blockchainProjects.map(async (project) => {
+        // Include projects in Open or In Progress status for client
+        if (project.status === 0n || project.status === 1n || project.status === 2n || project.status === 3n || project.status === 4n || project.status === 5n) { 
+          const freelancers = project.potentialFreelancers || [];
+          
+          return {
+            id: Number(project.id),
+            title: project.name,
+            description: project.description,
+            status: getStatusString(project.status),
+            projectFee: formatEther(project.projectFee),
+            expanded: false,
+            potentialFreelancers: freelancers
+          };
+        }
+        return null;
+      })).then(projects => projects.filter(project => project !== null));
+
+      setClientProjects(loadedProjects);
+    } else if (activeTab === "freelancer") {
+      const allProjects = await contract.getProjectsByStatus(0n); // Get all Open projects
+      
+      const loadedProjects = allProjects.filter(project => 
+        project.potentialFreelancers.some(
+          freelancer => freelancer.toLowerCase() === walletAddress.toLowerCase()
+        )
+      ).map((project) => ({
+        id: Number(project.id),
+        title: project.name,
+        description: project.description,
+        status: getStatusString(project.status),
+        projectFee: formatEther(project.projectFee),
+        expanded: false,
+      }));
+
+      // Also fetch the freelancer's own in-progress projects
+      const freelancerProjects = await contract.getProjectsForFreelancer(walletAddress);
+      const inProgressProjects = freelancerProjects.map((project) => ({
+        id: Number(project.id),
+        title: project.name,
+        description: project.description,
+        status: getStatusString(project.status),
+        projectFee: formatEther(project.projectFee),
+        expanded: false,
+      }));
+
+      // Combine and remove duplicates
+      const combinedProjects = [
+        ...loadedProjects, 
+        ...inProgressProjects
+      ].filter((project, index, self) => 
+        index === self.findIndex((p) => p.id === project.id)
+      );
+
+      setFreelancerProjects(combinedProjects);
+    }
+  } catch (error) {
+    console.error("Error loading projects:", error);
+  }
+};
+  useEffect(() => {
+    loadProjects();
+  }, [activeTab]);
+
+
+  const handleSelectFreelancer = async (projectId, freelancerAddress) => {
+    try {
+      setIsLoading(true);
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new Contract(contractAddress, contractABI, signer);
 
-      const walletAddress = await signer.getAddress();
+      const tx = await contract.selectFreelancer(projectId, freelancerAddress);
+      await tx.wait();
 
-      if (activeTab === "client") {
-        const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
-
-        const loadedProjects = blockchainProjects.map((project) => ({
-          id: Number(project.id),
-          title: project.name,
-          description: project.description,
-          status: getStatusString(project.status),
-          projectFee: formatEther(project.projectFee),
-          expanded: false,
-        }));
-
-        setClientProjects(loadedProjects);
-      } else if (activeTab === "freelancer") {
-        const blockchainProjects = await contract.getProjectsForFreelancer(walletAddress);
-
-        const loadedProjects = blockchainProjects.map((project) => ({
-          id: Number(project.id),
-          title: project.name,
-          description: project.description,
-          status: getStatusString(project.status),
-          projectFee: formatEther(project.projectFee),
-          expanded: false,
-        }));
-
-        setFreelancerProjects(loadedProjects);
-      }
+      alert("Freelancer selected successfully!");
+      await loadProjects();
     } catch (error) {
-      console.error("Error loading projects:", error);
+      console.error("Error selecting freelancer:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    loadProjects();
-  }, [activeTab]);
 
   const toggleExpand = (id) => {
     const updateProjects = (prevProjects) =>
@@ -334,9 +387,27 @@ const ProjectsPage = () => {
                   </div>
                 )}
 
+
+                {activeTab === "client" && project.status === "Open" && project.potentialFreelancers.length > 0 && (
+                  <div className="potential-freelancers">
+                    <h4>Potential Freelancers:</h4>
+                    {project.potentialFreelancers.map((freelancer, index) => (
+                      <div key={index} className="freelancer-item">
+                        <span>{freelancer}</span>
+                        <button 
+                          className="select-freelancer-button"
+                          onClick={() => handleSelectFreelancer(project.id, freelancer)}
+                          disabled={isLoading}
+                        >
+                          Select Freelancer
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 
                 {/* Only show the remove button for client projects */}
-                {activeTab === "client" && project.status === "Open" && (
+                {activeTab === "client" && project.status === "Open" &&  (
                   <button className="remove-project-button" onClick={() => handleRemoveProject(project.id)}>
                     Remove Project
                   </button>
