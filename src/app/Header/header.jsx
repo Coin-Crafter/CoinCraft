@@ -1,20 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./header.css";
 import { Link } from "react-router-dom";
 
 const Header = () => {
   const [walletAddress, setWalletAddress] = useState("");
-
-  // Function to handle account changes
-  const handleAccountsChanged = (accounts) => {
-    if (accounts.length > 0) {
-      setWalletAddress(accounts[0]);
-      console.log("Account changed to:", accounts[0]);
-    } else {
-      setWalletAddress("");
-      console.log("All accounts disconnected.");
-    }
-  };
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [profileDetails, setProfileDetails] = useState({
+    name: "",
+    email: "",
+    description: "",
+  });
 
   // Function to connect MetaMask
   const connectWallet = async () => {
@@ -24,72 +19,41 @@ const Header = () => {
           method: "eth_requestAccounts",
         });
 
-        if (accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-          console.log("Connected Wallet Address:", accounts[0]);
-        } else {
-          console.log("No accounts found.");
-        }
+        setWalletAddress(accounts[0]);
+
+        console.log("Connected Wallet Address:", accounts[0]);
       } catch (error) {
         if (error.code === 4001) {
-          // User rejected the request
           console.error("Connection rejected by user.");
         } else {
           console.error("Error connecting to MetaMask:", error);
         }
       }
     } else {
-      // Notify the user if MetaMask is not installed
-      alert(
-        "MetaMask is not installed. Please install the MetaMask extension in your browser."
-      );
+      alert("MetaMask is not installed. Please install the MetaMask extension in your browser.");
     }
   };
 
-  // Check if wallet is already connected on page load and set up event listeners
-  useEffect(() => {
-    const checkIfWalletIsConnected = async () => {
-      if (typeof window.ethereum !== "undefined") {
-        try {
-          // Request the user's accounts
-          const accounts = await window.ethereum.request({
-            method: "eth_accounts",
-          });
-          if (accounts.length > 0) {
-            setWalletAddress(accounts[0]);
-            console.log("Wallet is already connected:", accounts[0]);
-          } else {
-            console.log("No connected wallet found.");
-          }
+  // Handle input change in the profile form
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfileDetails((prevDetails) => ({
+      ...prevDetails,
+      [name]: value,
+    }));
+  };
 
-          // Listen for account changes
-          window.ethereum.on("accountsChanged", handleAccountsChanged);
-        } catch (error) {
-          console.error("Error checking wallet connection:", error);
-        }
-      } else {
-        console.log("MetaMask is not installed.");
-      }
-    };
-
-    checkIfWalletIsConnected();
-
-    // Cleanup function to remove the event listener when the component unmounts
-    return () => {
-      if (window.ethereum && window.ethereum.removeListener) {
-        window.ethereum.removeListener(
-          "accountsChanged",
-          handleAccountsChanged
-        );
-      }
-    };
-  }, []);
+  // Save profile details and close modal
+  const saveProfile = () => {
+    console.log("Profile saved:", profileDetails);
+    setIsProfileOpen(false);
+  };
 
   return (
     <div className="header">
       {/* Left Section: Logo */}
       <div className="logo">
-        <Link to="/ " className="custom-logo">
+        <Link to="/" className="custom-logo">
           CoinCraft
         </Link>
       </div>
@@ -111,7 +75,7 @@ const Header = () => {
       <div className="button-container">
         <div className="wallet-button">
           {walletAddress ? (
-            <button>
+            <button onClick={() => setIsProfileOpen(true)}>
               {walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4)}
             </button>
           ) : (
@@ -119,6 +83,40 @@ const Header = () => {
           )}
         </div>
       </div>
+
+      {/* Profile Modal */}
+      {isProfileOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>Profile</h2>
+            <input
+              type="text"
+              name="name"
+              placeholder="Name"
+              value={profileDetails.name}
+              onChange={handleInputChange}
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={profileDetails.email}
+              onChange={handleInputChange}
+            />
+            <textarea
+              name="description"
+              placeholder="Description"
+              value={profileDetails.description}
+              onChange={handleInputChange}
+              rows="4"
+            ></textarea>
+            <div className="modal-buttons">
+              <button onClick={saveProfile}>Save</button>
+              <button onClick={() => setIsProfileOpen(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
