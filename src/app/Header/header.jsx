@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./header.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [walletAddress, setWalletAddress] = useState("");
@@ -10,6 +10,8 @@ const Header = () => {
     email: "",
     description: "",
   });
+
+  const navigate = useNavigate();
 
   // Function to connect MetaMask
   const connectWallet = async () => {
@@ -113,6 +115,7 @@ const Header = () => {
             <div className="modal-buttons">
               <button onClick={saveProfile}>Save</button>
               <button onClick={() => setIsProfileOpen(false)}>Close</button>
+              <button onClick={() => navigate("/users")}>Manage Users</button>
             </div>
           </div>
         </div>
