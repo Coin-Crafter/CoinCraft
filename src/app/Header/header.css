@@ -1,112 +1,242 @@
+/* Header styles (preserved original design) */
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 50px;
-    background-color: #000; /* Black background */
-    color: #fff; /* White text color */
-    font-family: 'Alata', sans-serif;  }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 50px;
+  background-color: #000; /* Black background */
+  color: #fff; /* White text color */
+  font-family: 'Alata', sans-serif;
+}
 
-    .custom-logo {
-      text-decoration: none;
-      font-family: 'Oxanium', sans-serif;
-      font-size: 2rem;
-      /* Adjust size */
-      font-weight: bold;
-      /* Bold font */
-      color: #ff3bff;
-      /* Custom color */
-      background: linear-gradient(90deg,
-          #ff3bff,
-          #ecbfbf,
-          #5c24ff,
-          #5c24ff);
-      /* Gradient color */
-      background-clip: text;
-      /* Clip gradient to text */
-      -webkit-background-clip: text;
-      /* Safari support */
-      color: transparent;
-      /* Make rest of text transparent */
-      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-      /* Optional shadow */
-    }
-  
-    .custom-logo:hover {
-      color: transparent;
-      /* Retain transparency */
-      text-shadow: 3px 3px 8px rgba(92, 36, 255, 0.5);
-      /* Glow on hover */
-      transform: scale(1.05);
-      /* Slight enlargement */
-      transition: all 0.3s ease;
-      /* Smooth transition */
-    }
-  
-  .logo { 
-    font-size: 1.5rem !important; 
-    font-weight: bold !important;
-    text-decoration: none;
-  }
-  
-  .nav {
-    display: flex;
-    gap: 30px;
-  }
-  
-  .nav a {
-    text-decoration: none;
-    color: #fff;
-    font-size: 1rem;
-    transition: color 0.3s;
+.custom-logo {
+  text-decoration: none;
+  font-family: 'Oxanium', sans-serif;
+  font-size: 2rem;
+  font-weight: bold;
+  background: linear-gradient(
+    90deg,
+    #ff3bff,
+    #ecbfbf,
+    #5c24ff,
+    #5c24ff
+  ); /* Gradient color */
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
 
-  }
-  
-  .nav a:hover {
-    color: #d3d3d3; /* Lighter color on hover */
-    text-decoration: none;
-    text-decoration-line: underline;
-  }
+.custom-logo:hover {
+  text-shadow: 3px 3px 8px rgba(92, 36, 255, 0.5);
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
 
-  /* Outer Gradient Wrapper */
+.nav {
+  display: flex;
+  gap: 30px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #fff;
+  font-size: 1rem;
+  transition: color 0.3s;
+}
+
+.nav a:hover {
+  color: #d3d3d3;
+  text-decoration: underline;
+}
+
 .button-container {
-    display: inline-block; /* Tight wrapper around the content */
-    border-radius: 40px; /* Rounded corners for gradient border */
-    padding: 2px; /* Thickness of gradient border */
-    background: linear-gradient(
-      to right,
-      #ff3bff 0%,
-      #ecbfbf 38%,
-      #5c24ff 76%,
-      #d94fd5 100%
-    ); /* Gradient border */
-  }
-  
-  /* Inner Button Wrapper */
-  .wallet-button {
-    border-radius: 40px; /* Matches outer container for seamless look */
-    overflow: hidden; /* Ensures button respects border radius */
-  }
-  
-  /* Actual Button */
-  .wallet-button button {
-    color: #fff;
-    padding: 10px 30px;
-    background: #000; /* Black background */
-    border: none; /* No default border */
-    border-radius: 40px; /* Matches container for smooth corners */
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.3s;
-  }
-  
-  /* Button Hover Effect */
-  .wallet-button button:hover {
-    transform: scale(1.05);
-    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.3); /* Subtle glow */
-  }
-  
-  .nav-link {
-    cursor: hand;
-  }
+  display: inline-block;
+  border-radius: 40px;
+  padding: 2px;
+  background: linear-gradient(
+    to right,
+    #ff3bff 0%,
+    #ecbfbf 38%,
+    #5c24ff 76%,
+    #d94fd5 100%
+  ); /* Gradient border */
+}
+
+/* Outer Gradient Wrapper */
+.button-container {
+  display: inline-block; /* Tight wrapper around the content */
+  border-radius: 40px; /* Rounded corners for gradient border */
+  padding: 2px; /* Thickness of gradient border */
+  background: linear-gradient(
+    to right,
+    #ff3bff 0%,
+    #ecbfbf 38%,
+    #5c24ff 76%,
+    #d94fd5 100%
+  ); /* Gradient border */
+}
+
+/* Inner Button Wrapper */
+.wallet-button {
+  border-radius: 40px; /* Matches outer container for seamless look */
+  overflow: hidden; /* Ensures button respects border radius */
+}
+
+/* Actual Button */
+.wallet-button button {
+  color: #fff;
+  padding: 10px 30px;
+  background: #000; /* Black background */
+  border: none; /* No default border */
+  border-radius: 40px; /* Matches container for smooth corners */
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.3s ease;
+}
+
+/* Button Hover Effect: Only text shifts */
+.wallet-button button:hover {
+  /* color: #ecbfbf; Change text color slightly for hover */
+  /* transform: translateY(-2px); Subtle upward movement of text */
+  transform: scale(1.05);
+  box-shadow: none; /* Removes outer glow effect */
+}
+
+
+/* Full-page modal styles */
+.full-page-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95); /* Dark overlay */
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.profile-content {
+  text-align: center;
+  width: 80%;
+  max-width: 600px;
+  background: #121212;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.profile-header {
+  margin-bottom: 20px;
+}
+
+.profile-picture {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 4px solid #5c24ff;
+  margin-bottom: 10px;
+}
+
+.description {
+  margin: 15px 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.links {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 1.5rem;
+}
+
+.links a {
+  color: #fff;
+  transition: color 0.3s;
+}
+
+.links a:hover {
+  color: #5c24ff;
+}
+
+/* Edit Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9); /* Slightly transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: #1c1c1c;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  color: #fff;
+}
+
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #5c24ff;
+  background: #121212;
+  color: #fff;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+  outline: none;
+  border-color: #ff3bff;
+}
+
+.modal-buttons button {
+  margin: 5px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background: #5c24ff;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.modal-buttons button:hover {
+  background: #ff3bff;
+}
+
+.icon-container {
+  display: flex;
+  align-items: center; /* Align items vertically centered */
+  gap: 8px; /* Add spacing between icons if needed */
+  margin-left: 42.5%;
+}
+
+.icon-1 {
+  width: 40px;
+  height: 40px;
+  align-self: center;
+  cursor: pointer; /* Add a pointer cursor for interactivity */
+}
+
+.icon-2 {
+  width: 50px;
+  height: 50px;
+  align-self: center;
+  cursor: pointer; /* Add a pointer cursor for interactivity */
+}

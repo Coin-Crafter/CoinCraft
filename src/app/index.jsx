@@ -5,6 +5,7 @@ import Header from './Header/header';
 import Content from './Homepage/Content';
 import ProjectsPage from './YourProjects/yourprojects';
 import Verify from './Verifier/verifier';
+import Users from './Users/Users';
 
 export default function Index() {
     return (
@@ -29,6 +30,11 @@ export default function Index() {
                 <Route path="/be-a-verifier" element={ 
                     <>
                         <Verify/>
+                    </>
+                }/>
+                <Route path="/users" element={ 
+                    <>
+                        <Users/>
                     </>
                 }/>
             </Routes>

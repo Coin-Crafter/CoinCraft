@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import "./yourprojects.css";
 import { BrowserProvider, Contract, parseEther, formatEther } from "ethers";
 import contractABI from "../../contract/contractABI.json";
+import { db } from "../../firebase.jsx";
 import { contractAddress } from "../../contract/contractAddress";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import FreelancerItem from "./freelancerItem.jsx"
 
 const ProjectsPage = () => {
   const [activeTab, setActiveTab] = useState("client");
@@ -12,6 +15,49 @@ const ProjectsPage = () => {
   const [formData, setFormData] = useState({ name: "", description: "", projectFee: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [potentialFreelancers, setPotentialFreelancers] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null);
+
+  useEffect(() => {
+    const getWalletAddress = async () => {
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const contract = new Contract(contractAddress, contractABI, signer);
+
+      const walletAddress = await signer.getAddress();
+      setWalletAddress(walletAddress);
+    };
+    getWalletAddress();
+  }, []);
+
+  const fetchUserProfile = async (walletAddress) => {
+    try {
+      const allUsersData = await collection(db, "profiles");
+      const allUsersSnapshot = await getDocs(allUsersData);
+      // console.log(allUsersSnapshot.docs.map(doc => doc.data()));
+      console.log("Searching for wallet address:", walletAddress);
+      const normalizedWalletAddress = walletAddress.toLowerCase();
+
+       // Iterate over the documents
+      allUsersSnapshot.docs.forEach((doc) => {
+        const userData = doc.data();
+
+        // Normalize the wallet address from the database for comparison
+        const normalizedUserWalletAddress = userData.walletAddress.toLowerCase();
+
+        // Check if it matches
+        if (normalizedUserWalletAddress === normalizedWalletAddress) {
+          console.log("Match found:", userData);
+        } else {
+          console.log(userData.walletAddress, "does not match", walletAddress);
+        }
+
+        return userData;
+      });
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   // Load projects from the blockchain
   const loadProjects = async () => {
@@ -26,6 +72,8 @@ const ProjectsPage = () => {
     const contract = new Contract(contractAddress, contractABI, signer);
 
     const walletAddress = await signer.getAddress();
+
+    await fetchUserProfile(walletAddress);
 
     if (activeTab === "client") {
       const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
@@ -114,6 +162,8 @@ const ProjectsPage = () => {
       setIsLoading(false);
     }
   };
+
+  
 
   const toggleExpand = (id) => {
     const updateProjects = (prevProjects) =>
@@ -304,6 +354,28 @@ const ProjectsPage = () => {
     }
   };
 
+  // Fetch multiple freelancer profiles
+  const fetchFreelancerProfiles = async (freelancerAddresses) => {
+    try {
+      const profiles = {};
+      const profilePromises = freelancerAddresses.map(async (address) => {
+        const docRef = doc(db, "profiles", address);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          profiles[address] = docSnap.data();
+        } else {
+          profiles[address] = null; // Handle profiles not found
+        }
+      });
+
+      await Promise.all(profilePromises);
+      return profiles;
+    } catch (error) {
+      console.error("Error fetching freelancer profiles:", error);
+      return {};
+    }
+  };
+
   return (
     <div className="projects-page">
       <header className="projects-header">
@@ -393,14 +465,21 @@ const ProjectsPage = () => {
                     <h4>Potential Freelancers:</h4>
                     {project.potentialFreelancers.map((freelancer, index) => (
                       <div key={index} className="freelancer-item">
-                        <span>{freelancer}</span>
-                        <button 
+                        {/* <span>{freelancer}</span> */}
+                        <FreelancerItem 
+                          client={walletAddress}
+                          freelancer={freelancer}
+                          projectId={project.id}
+                          handleSelectFreelancer={handleSelectFreelancer}
+                          isLoading={isLoading}
+                        />
+                        {/* <button 
                           className="select-freelancer-button"
                           onClick={() => handleSelectFreelancer(project.id, freelancer)}
                           disabled={isLoading}
                         >
                           Select Freelancer
-                        </button>
+                        </button> */}
                       </div>
                     ))}
                   </div>
