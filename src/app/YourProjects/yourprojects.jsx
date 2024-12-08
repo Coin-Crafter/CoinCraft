@@ -17,6 +17,7 @@ const ProjectsPage = () => {
   const [potentialFreelancers, setPotentialFreelancers] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [walletAddress, setWalletAddress] = useState(null);
+  const [proofLink, setProofLink] = useState("");
 
   useEffect(() => {
     const getWalletAddress = async () => {
@@ -59,6 +60,22 @@ const ProjectsPage = () => {
     }
   };
 
+  const fetchFreelancerName = async (walletAddress) => {
+    try {
+      const docRef = doc(db, "profiles", walletAddress.toLowerCase());
+      const docSnap = await getDoc(docRef);
+  
+      if (docSnap.exists()) {
+        return docSnap.data().name || "Unknown Freelancer";
+      } else {
+        return "Freelancer Not Found";
+      }
+    } catch (error) {
+      console.error("Error fetching freelancer name:", error);
+      return "Error Fetching Name";
+    }
+  };
+
   // Load projects from the blockchain
   const loadProjects = async () => {
   try {
@@ -82,6 +99,8 @@ const ProjectsPage = () => {
         // Include projects in Open or In Progress status for client
         if (project.status === 0n || project.status === 1n || project.status === 2n || project.status === 3n || project.status === 4n || project.status === 5n) { 
           const freelancers = project.potentialFreelancers || [];
+          const freelancerName = await fetchFreelancerName(project.selectedFreelancer);
+
           
           return {
             id: Number(project.id),
@@ -89,8 +108,13 @@ const ProjectsPage = () => {
             description: project.description,
             status: getStatusString(project.status),
             projectFee: formatEther(project.projectFee),
+            proofLink: project.proofLink,
             expanded: false,
-            potentialFreelancers: freelancers
+            potentialFreelancers: freelancers,
+            selectedFreelancer: {
+                address: project.selectedFreelancer,
+                name: freelancerName,
+              },
           };
         }
         return null;
@@ -184,17 +208,24 @@ const ProjectsPage = () => {
   };
 
   const handleMarkProjectCompleted = async (projectId) => {
+    if (!proofLink) {
+      alert("Please provide a proof link before marking the project completed.");
+      return;
+    }
+
     try {
       setIsLoading(true);
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new Contract(contractAddress, contractABI, signer);
 
-      const tx = await contract.markProjectAsCompleted(projectId);
+      // Call the updated contract function with proof link
+      const tx = await contract.markProjectAsCompleted(projectId, proofLink);
       await tx.wait();
 
-      alert("Project marked as completed and waiting for client approval!");
+      alert("Project marked as completed and now waiting for client approval!");
       await loadProjects();
+      setProofLink("");
     } catch (error) {
       console.error("Error marking project as completed:", error);
       alert(`Error: ${error.message}`);
@@ -273,6 +304,7 @@ const ProjectsPage = () => {
       setIsLoading(false);
     }
   };
+  
 
   const handleCreateProject = async () => {
     if (!formData.name || !formData.description || !formData.projectFee) {
@@ -338,6 +370,16 @@ const ProjectsPage = () => {
   }
 
   const renderProjectStatus = (status) => {
+    // if (
+    //   status === "Open" &&
+    //   potentialFreelancers &&
+    //   potentialFreelancers.some(
+    //     (freelancer) => freelancer.toLowerCase() === walletAddress.toLowerCase()
+    //   )
+    // ) {
+    //   return <span className="status request-sent">Request Sent</span>;
+    // }
+
     switch (status) {
       case "Open":
         return <span className="status open">Open</span>;
@@ -407,94 +449,164 @@ const ProjectsPage = () => {
       )}
 
       <div className="yprojects-list">
-        {(activeTab === "client" ? clientProjects : freelancerProjects).map((project) => (
-          <div
-            key={project.id}
-            className={`yprojects-card ${project.expanded ? "expanded-card" : ""}`}
-          >
-            <div className="yprojects-header" onClick={() => toggleExpand(project.id)}>
-              <h3>{project.title}</h3>
-              <div className="right-section">
-                {renderProjectStatus(project.status)}
-                <button className="yexpand-button">
-                  <span className="material-icons">
-                    {project.expanded ? "expand_less" : "expand_more"}
-                  </span>
-                </button>
-              </div>
-            </div>
-            {project.expanded && (
-              <div className="yprojects-details">
-                <p>{project.description}</p>
-                {/* Freelancer: Mark Project as Completed */}
-                {activeTab === "freelancer" && 
-                 project.status === "In Progress" && (
-                  <button 
-                    className="mark-completed-button" 
-                    onClick={() => handleMarkProjectCompleted(project.id)}
-                    disabled={isLoading}
-                  >
-                    Mark Project Completed
+        {(activeTab === "client" ? clientProjects : freelancerProjects).map(
+          (project) => (
+            <div
+              key={project.id}
+              className={`yprojects-card ${
+                project.expanded ? "expanded-card" : ""
+              }`}
+            >
+              <div
+                className="yprojects-header"
+                onClick={() => toggleExpand(project.id)}
+              >
+                <h3>{project.title}</h3>
+                <div className="right-section">
+                  {activeTab === "freelancer" && project.status === "Open" ? (
+                    <span className="status open">Request Sent</span>
+                  ) : (
+                    renderProjectStatus(project.status)
+                  )}
+                  <button className="yexpand-button">
+                    <span className="material-icons">
+                      {project.expanded ? "expand_less" : "expand_more"}
+                    </span>
                   </button>
-                )}
+                </div>
+              </div>
+              {project.expanded && (
+                <div className="yprojects-details">
+                  <p>{project.description}</p>
+                  {/* Show proof link if project is WaitingForApproval and user is client */}
+                  {activeTab === "client" &&
+                    project.status === "Waiting For Approval" && (
+                      <div className="proof-section">
+                        <h4>Proof of Completion:</h4>
+                        {project.proofLink ? (
+                          <a
+                            href={project.proofLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {project.proofLink}
+                          </a>
+                        ) : (
+                          <p>No proof link provided.</p>
+                        )}
 
-                {/* Client: Approve or Dispute Project */}
-                {activeTab === "client" && 
-                 project.status === "Waiting For Approval" && (
-                  <div className="project-approval-buttons">
-                    <button 
-                      className="approve-button" 
-                      onClick={() => handleApproveProjectCompletion(project.id)}
-                      disabled={isLoading}
-                    >
-                      Approve Completion
-                    </button>
-                    <button 
-                      className="dispute-button" 
-                      onClick={() => handleDisputeProjectCompletion(project.id)}
-                      disabled={isLoading}
-                    >
-                      Dispute Completion
-                    </button>
-                  </div>
-                )}
+                        <p>{project.freelancer}</p>
+                      </div>
+                    )}
 
-
-                {activeTab === "client" && project.status === "Open" && project.potentialFreelancers.length > 0 && (
-                  <div className="potential-freelancers">
-                    <h4>Potential Freelancers:</h4>
-                    {project.potentialFreelancers.map((freelancer, index) => (
-                      <div key={index} className="freelancer-item">
-                        {/* <span>{freelancer}</span> */}
-                        <FreelancerItem 
-                          client={walletAddress}
-                          freelancer={freelancer}
-                          projectId={project.id}
-                          handleSelectFreelancer={handleSelectFreelancer}
-                          isLoading={isLoading}
+                  {/* Freelancer: Enter Proof Link and Mark Project as Completed */}
+                  {activeTab === "freelancer" &&
+                    project.status === "In Progress" && (
+                      <div className="proof-input-section">
+                        <input
+                          type="text"
+                          placeholder="Enter proof link (e.g. Google Drive, IPFS)"
+                          value={proofLink}
+                          onChange={(e) => setProofLink(e.target.value)}
                         />
-                        {/* <button 
+
+                        <button
+                          className="mark-completed-button"
+                          onClick={() => handleMarkProjectCompleted(project.id)}
+                          disabled={isLoading}
+                        >
+                          Submit Proof & Mark Completed
+                        </button>
+                      </div>
+                    )}
+
+                  {/* Client: Approve or Dispute Project */}
+                  {activeTab === "client" &&
+                    project.status === "Waiting For Approval" && (
+                      <div className="project-approval-buttons">
+                        <button
+                          className="approve-button"
+                          onClick={() =>
+                            handleApproveProjectCompletion(project.id)
+                          }
+                          disabled={isLoading}
+                        >
+                          Approve Completion
+                        </button>
+                        <button
+                          className="dispute-button"
+                          onClick={() =>
+                            handleDisputeProjectCompletion(project.id)
+                          }
+                          disabled={isLoading}
+                        >
+                          Dispute Completion
+                        </button>
+                      </div>
+                    )}
+
+                  {activeTab === "client" &&
+                    project.status === "Open" &&
+                    project.potentialFreelancers.length > 0 && (
+                      <div className="potential-freelancers">
+                        <h4>Potential Freelancers:</h4>
+                        {project.potentialFreelancers.map(
+                          (freelancer, index) => (
+                            <div key={index} className="freelancer-item">
+                              {/* <span>{freelancer}</span> */}
+                              <FreelancerItem
+                                client={walletAddress}
+                                freelancer={freelancer}
+                                projectId={project.id}
+                                handleSelectFreelancer={handleSelectFreelancer}
+                                isLoading={isLoading}
+                              />
+                              {/* <button 
                           className="select-freelancer-button"
                           onClick={() => handleSelectFreelancer(project.id, freelancer)}
                           disabled={isLoading}
                         >
                           Select Freelancer
                         </button> */}
+                            </div>
+                          )
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-                
-                {/* Only show the remove button for client projects */}
-                {activeTab === "client" && project.status === "Open" &&  (
-                  <button className="remove-project-button" onClick={() => handleRemoveProject(project.id)}>
-                    Remove Project
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+                    )}
+
+                    {activeTab === "client" && project.status === "In Progress" && (     
+                      <div>
+                        <h4>Selected Freelancer:</h4>
+                        {project.selectedFreelancer?.address ? (
+                          <>
+                            <p>
+                              <strong>Name:</strong> {project.selectedFreelancer.name}
+                            </p>
+                            <p>
+                              <strong>Wallet Address:</strong> {project.selectedFreelancer.address}
+                            </p>
+                          </>
+                        ) : (
+                          <p>No freelancer selected yet.</p>
+                        )}
+                      </div>
+                    )}
+
+
+                  {/* Only show the remove button for client projects */}
+                  {activeTab === "client" && project.status === "Open" && (
+                    <button
+                      className="remove-project-button"
+                      onClick={() => handleRemoveProject(project.id)}
+                    >
+                      Remove Project
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        )}
       </div>
 
       {showModal && (

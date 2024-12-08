@@ -4,7 +4,7 @@ import { parseUnits, ethers } from "ethers";
 import ProjectManagerABI from "../../contract/contractABI.json";
 import { contractAddress } from "../../contract/contractAddress";
 
-function VerifierProjectCard({ projectId, title, description, projectFee, creator, freelancer }) {
+function VerifierProjectCard({ projectId, title, description, projectFee, creator, freelancer, proofLink }) {
   const [isVoting, setIsVoting] = useState(false);
   const [verificationFee, setVerificationFee] = useState(null);
 
@@ -84,6 +84,9 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
         <span>Creator: {creator.slice(0, 6)}...{creator.slice(-4)}</span>
         <br />
         <span>Freelancer: {freelancer.slice(0, 6)}...{freelancer.slice(-4)}</span>
+
+        <br /><br />
+        <span>Proof: {proofLink}</span>
       </div>
       <br />
       <div className="button-container">

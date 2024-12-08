@@ -37,9 +37,10 @@ function Verify() {
           id: Number(project.id),
           title: project.name,
           description: project.description,
-          projectFee: ethers.formatUnits(project.projectFee || "0", "ether"),
+          projectFee: ethers.formatUnits(project.verificationFee || "0", "ether"),
           creator: project.creator,
-          freelancer: project.freelancer
+          freelancer: project.selectedFreelancer ,
+          proofLink: project.proofLink
         }));
 
         setProjects(formattedProjects);
@@ -72,6 +73,7 @@ function Verify() {
               projectFee={verificationFee} // Use verification fee instead of project fee
               creator={project.creator}
               freelancer={project.freelancer}
+              proofLink={project.proofLink}
             />
           ))
         ) : (

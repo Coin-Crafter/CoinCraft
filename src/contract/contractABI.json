@@ -306,6 +306,11 @@
             "internalType": "uint256",
             "name": "rejectVotes",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "proofLink",
+            "type": "string"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -382,6 +387,11 @@
             "internalType": "uint256",
             "name": "rejectVotes",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "proofLink",
+            "type": "string"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -458,6 +468,11 @@
             "internalType": "uint256",
             "name": "rejectVotes",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "proofLink",
+            "type": "string"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -498,6 +513,11 @@
         "internalType": "uint256",
         "name": "_projectId",
         "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_proofLink",
+        "type": "string"
       }
     ],
     "name": "markProjectAsCompleted",
@@ -588,6 +608,11 @@
         "internalType": "uint256",
         "name": "rejectVotes",
         "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "proofLink",
+        "type": "string"
       }
     ],
     "stateMutability": "view",

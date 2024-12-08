@@ -23,6 +23,7 @@ contract ProjectManager {
         uint256 projectFee;
         uint256 acceptVotes;
         uint256 rejectVotes;
+        string proofLink;
     }
 
     Project[] public projects;
@@ -62,7 +63,7 @@ contract ProjectManager {
     mapping(uint256 => mapping(address => bool))
         public freelancerAcceptedProjects;
 
-    function markProjectAsCompleted(uint256 _projectId) public {
+    function markProjectAsCompleted(uint256 _projectId, string memory _proofLink) public {
         require(_projectId < projects.length, "Project does not exist");
         Project storage project = projects[_projectId];
 
@@ -74,7 +75,11 @@ contract ProjectManager {
             project.status == Status.InProgress,
             "Project must be in progress"
         );
-
+        require(
+        bytes(_proofLink).length > 0,
+        "Proof link cannot be empty"
+    );
+        project.proofLink = _proofLink;
         project.status = Status.WaitingForApproval;
 
         emit ProjectStatusUpdated(
@@ -99,7 +104,6 @@ contract ProjectManager {
 
         project.status = Status.Completed;
 
-        // Transfer project fee to freelancer
         (bool success, ) = payable(project.selectedFreelancer).call{
             value: project.projectFee + verificationFee
         }("");
@@ -130,17 +134,14 @@ contract ProjectManager {
             project.status == Status.WaitingForApproval,
             "Project must be waiting for approval"
         );
-
         project.status = Status.InDispute;
         project.acceptVotes = 0;
         project.rejectVotes = 0;
 
-        // Reset hasVerified mapping for all verifiers
         for (uint256 i = 0; i < projectVerifiers[_projectId].length; i++) {
             hasVerified[_projectId][projectVerifiers[_projectId][i]] = false;
         }
 
-        // Clear the verifiers array
         delete projectVerifiers[_projectId];
 
         emit ProjectStatusUpdated(
@@ -240,16 +241,9 @@ contract ProjectManager {
             "Project must be in dispute"
         );
 
-        // Reset project to Open and remove freelancer
         project.status = Status.Open;
         project.selectedFreelancer = address(0);
 
-        // Transfer 1/3 of verification fee to verifier
-        // uint256 verifierFee = verificationFee / 3;
-        // (bool successVerifier, ) = payable(msg.sender).call{value: verifierFee}(
-        //     ""
-        // );
-        // require(successVerifier, "Verifier fee transfer failed");
 
         emit ProjectStatusUpdated(_projectId, Status.InDispute, Status.Open);
     }
@@ -260,6 +254,9 @@ contract ProjectManager {
         uint256 _timestamp,
         uint256 _projectFee
     ) public payable {
+        require(bytes(_name).length > 0, "Project name cannot be empty");
+        require(bytes(_description).length > 0, "Project description cannot be empty");
+        require(_projectFee > 0, "Project fee must be greater than zero");
         require(
             msg.value == _projectFee + verificationFee,
             "Incorrect ETH sent"
@@ -275,11 +272,12 @@ contract ProjectManager {
                 _timestamp,
                 msg.sender,
                 new address[](0),
-                address(0), // No freelancer yet
+                address(0), 
                 Status.Open,
                 _projectFee,
                 0,
-                0
+                0,
+                ""
             )
         );
         emit ProjectCreated(
@@ -363,7 +361,6 @@ contract ProjectManager {
 
         uint256 refundAmount = project.projectFee + verificationFee;
 
-        // Refund verification fees to all potential freelancers
         for (uint i = 0; i < project.potentialFreelancers.length; i++) {
             (bool freelancerRefundSuccess, ) = payable(
                 project.potentialFreelancers[i]

@@ -413,3 +413,9 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+.status.request-sent {
+  background-color: #FFD700;
+  /* Or any color you prefer */
+  color: black;
+}

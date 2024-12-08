@@ -1,15 +1,15 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "C:\\Users\\jashv\\OneDrive\\Desktop\\CoinCraft\\hardhat\\contracts\\ProjectManager.sol": {
-      "lastModificationDate": 1733503823697,
-      "contentHash": "8a5168a10b989edfeebcaa8beceaab41",
+    "C:\\Users\\Akash\\Desktop\\CoinCraft\\hardhat\\contracts\\ProjectManager.sol": {
+      "lastModificationDate": 1733650222908,
+      "contentHash": "4922d4c0e701da8ca1bffddb76eb5dbc",
       "sourceName": "contracts/ProjectManager.sol",
       "solcConfig": {
         "version": "0.8.0",
         "settings": {
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
           "outputSelection": {

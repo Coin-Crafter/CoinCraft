@@ -3,6 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { db } from "../../firebase.jsx"; // Import Firebase configuration
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import "./header.css";
+import { BrowserProvider, Contract } from "ethers";
+import { contractAddress } from "../../contract/contractAddress";
+import contractABI from "../../contract/contractABI.json";
+
+
 
 const Header = () => {
   const [walletAddress, setWalletAddress] = useState("");
@@ -22,13 +27,45 @@ const Header = () => {
 
   const handleAccountsChanged = (accounts) => {
     if (accounts.length > 0) {
+      console.log("refreshing now");
+      window.location.reload();
       setWalletAddress(accounts[0]);
       console.log("Account changed to:", accounts[0]);
     } else {
+      window.location.reload();
       setWalletAddress("");
       console.log("All accounts disconnected.");
     }
   };
+
+  // Fetch Completed Projects Count
+const fetchCompletedProjectsCount = async (freelancerWallet) => {
+  try {
+    if (!window.ethereum) {
+      throw new Error("MetaMask is not installed!");
+    }
+
+    // Connect to Ethereum and contract
+    const provider = new BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new Contract(contractAddress, contractABI, signer);
+
+    // Fetch all completed projects from the contract
+    const completedProjects = await contract.getProjectsByStatus(4n); // Status Completed
+
+    // Filter projects matching the freelancer's wallet address
+    const filteredProjects = completedProjects.filter(
+      (project) =>
+        project.selectedFreelancer.toLowerCase() === freelancerWallet.toLowerCase()
+    );
+
+    return filteredProjects.length;
+  } catch (error) {
+    console.error("Error fetching completed projects count:", error);
+    return 0;
+  }
+};
+
 
   // Function to connect MetaMask
   const connectWallet = async () => {
@@ -134,18 +171,57 @@ const Header = () => {
         const docRef = doc(db, "profiles", walletAddress);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setProfileDetails(docSnap.data());
+          const fetchedProfile = docSnap.data();
+          setProfileDetails(fetchedProfile);
+
+          // If name is empty, open profile and edit modal automatically
+          if (!fetchedProfile.name) {
+            setIsProfileOpen(true);
+            setIsEditModalOpen(true);
+          }
         }
       }
     };
     fetchProfile();
   }, [walletAddress]);
 
+  useEffect(() => {
+    const fetchFreelancerProfile = async () => {
+      if (walletAddress) {
+        const docRef = doc(db, "profiles", walletAddress);
+        const docSnap = await getDoc(docRef);
+  
+        if (docSnap.exists()) {
+          const fetchedProfile = docSnap.data();
+  
+          // Fetch the number of completed projects
+          const completedCount = await fetchCompletedProjectsCount(walletAddress);
+  
+          // Update profile with completed projects count
+          setProfileDetails({
+            ...fetchedProfile,
+            projectsCompleted: completedCount,
+          });
+        }
+      }
+    };
+  
+    fetchFreelancerProfile();
+  }, [walletAddress]);
+  
+
   // Save profile details to Firestore
   const saveProfile = async () => {
-    if (profileDetails.profilePicture && !isValidImageURL(profileDetails.profilePicture)) {
-      alert("Please enter a valid image URL (jpg, png, gif, webp).");
+    // Check if name is empty again before saving
+    if (!profileDetails.name.trim()) {
+      alert("Name cannot be empty.");
       return;
+    }
+
+    if (profileDetails.profilePicture && !isValidImageURL(profileDetails.profilePicture)) {
+      // Since we now store data URLs, this validation might not be necessary
+      // But if we still want to ensure image format, you can skip this
+      // For now, let's remove this validation since we store a data URL.
     }
 
     try {
@@ -166,17 +242,35 @@ const Header = () => {
   };
 
   // Helper function to validate image URL
+  // Not necessary if we are using data URLs
   const isValidImageURL = (url) => {
     return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   };
 
-  // Handle input change in the edit form
+  // Handle input change in the edit form (for text fields)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProfileDetails((prevDetails) => ({
       ...prevDetails,
       [name]: value,
     }));
+  };
+
+  // Handle image file selection
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Convert file to a Data URL
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      setProfileDetails((prev) => ({
+        ...prev,
+        profilePicture: dataUrl,
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -224,26 +318,71 @@ const Header = () => {
                 alt="Profile"
                 className="profile-picture"
               />
-              <h2>{profileDetails.name}</h2>
+              <h2>{profileDetails.name || "No Name Set"}</h2>
             </div>
-            <p>Projects Completed: {profileDetails.projectsCompleted}</p>
+            <p>Projects Completed: {profileDetails.projectsCompleted || 0}</p>
             <p className="description">{profileDetails.description}</p>
             <div className="icon-container">
-              <a href={profileDetails.githubLink} target="_blank" rel="noopener noreferrer">
+            {profileDetails.githubLink && !profileDetails.linkedinLink && (
+              <a
+                href={profileDetails.githubLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="single-icon"
+              >
                 <img
                   src={process.env.PUBLIC_URL + "/asset/github-icon.png"}
                   alt="GitHub"
-                  className="icon-1"
+                  className="icon-centered"
                 />
               </a>
-              <a href={profileDetails.linkedinLink} target="_blank" rel="noopener noreferrer">
+            )}
+
+            {profileDetails.linkedinLink && !profileDetails.githubLink && (
+              <a
+                href={profileDetails.linkedinLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="single-icon"
+              >
                 <img
                   src={process.env.PUBLIC_URL + "/asset/linkedin-icon.png"}
                   alt="LinkedIn"
-                  className="icon-2"
+                  className="icon-centered"
                 />
               </a>
-            </div>
+            )}
+
+            {profileDetails.githubLink && profileDetails.linkedinLink && (
+              <>
+                <a
+                  href={profileDetails.githubLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="icon-wrapper"
+                >
+                  <img
+                    src={process.env.PUBLIC_URL + "/asset/github-icon.png"}
+                    alt="GitHub"
+                    className="icon"
+                  />
+                </a>
+                <a
+                  href={profileDetails.linkedinLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="icon-wrapper"
+                >
+                  <img
+                    src={process.env.PUBLIC_URL + "/asset/linkedin-icon.png"}
+                    alt="LinkedIn"
+                    className="icon"
+                  />
+                </a>
+              </>
+            )}
+          </div>
+
             <div className="modal-buttons">
               <button onClick={() => setIsEditModalOpen(true)}>Edit Profile</button>
               <button onClick={() => setIsProfileOpen(false)}>Close</button>
@@ -259,24 +398,15 @@ const Header = () => {
           <div className="modal-content">
             <h2>Edit Profile</h2>
             <input
-              type="text"
-              name="profilePicture"
-              placeholder="Paste online image URL"
-              value={profileDetails.profilePicture}
-              onChange={handleInputChange}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
             />
             <input
               type="text"
               name="name"
               placeholder="Name"
               value={profileDetails.name}
-              onChange={handleInputChange}
-            />
-            <input
-              type="number"
-              name="projectsCompleted"
-              placeholder="Projects Completed"
-              value={profileDetails.projectsCompleted}
               onChange={handleInputChange}
             />
             <textarea
