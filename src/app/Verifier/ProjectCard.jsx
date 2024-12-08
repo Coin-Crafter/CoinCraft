@@ -122,7 +122,7 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
         </span>
       </div>
       <br />
-      <div className="button-container">
+      <div className="button-container2">
         <div className="button-gradient-wrapper">
           <button 
             className="gradient-button accept" 

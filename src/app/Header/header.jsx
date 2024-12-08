@@ -300,7 +300,9 @@ const fetchCompletedProjectsCount = async (freelancerWallet) => {
         <div className="wallet-button">
           {walletAddress ? (
             <button onClick={() => setIsProfileOpen(true)}>
-              {walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4)}
+              {profileDetails.name && profileDetails.name.trim() !== "" 
+                ? "Welcome, "+ profileDetails.name 
+                : walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4)}
             </button>
           ) : (
             <button onClick={connectWallet}>Connect Wallet</button>
