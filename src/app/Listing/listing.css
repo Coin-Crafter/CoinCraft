@@ -146,3 +146,70 @@ body {
     margin: 4px 2px;
     cursor: pointer;
   }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow-y: auto; /* Allow scrolling for large content */
+  }
+  
+  .modal-content {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%; /* Make the modal responsive */
+    max-width: 1800px; /* Limit the maximum width */
+    position: relative;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+    word-wrap: break-word; /* Ensure text wraps within the container */
+    overflow-y: auto; /* Add scrolling for overflowing content */
+    max-height: 80vh; /* Prevent the modal from exceeding the viewport height */
+  }
+  
+  .modal-project-description {
+    margin-top: 1rem;
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: justify; /* Align text for better readability */
+    word-break: break-word; /* Handle long words gracefully */
+  }
+  
+  .close-modal-button {
+    margin-top: 2rem;
+    padding: 0.5rem 1rem;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .close-modal-button:hover {
+    background: #d32f2f;
+  }
+  
+  /* Animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .modal-project-logo {
+    width: 100px;
+    height: 100px;
+  }
