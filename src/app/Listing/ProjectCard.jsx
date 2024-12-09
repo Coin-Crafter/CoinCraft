@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 import ProjectManagerABI from "../../contract/contractABI.json";
 import { contractAddress } from "../../contract/contractAddress";
 import { db } from "../../firebase.jsx";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, onSnapshot} from "firebase/firestore";
 
 function ProjectCard({ 
   projectId, 
@@ -12,7 +12,7 @@ function ProjectCard({
   description, 
   projectFee, 
   creator,
-  onProjectAccepted 
+  onProjectAccepted,
 }) {
   const [creatorProfilePic, setCreatorProfilePic] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,31 +83,35 @@ function ProjectCard({
   return (
     <>
       <div className="project-card" onClick={() => setIsModalOpen(true)}>
-        <img
-          src={creatorProfilePic}
-          alt="Project Creator"
-          className="project-logo"
-        />
-        <h2 className="project-title">{title}</h2>
+        <div className="combiner2">
+          <img
+            src={creatorProfilePic}
+            alt="Project Creator"
+            className="project-logo"
+          />
+          <h2 className="project-title">{title}</h2>
+        </div>
         <p className="project-description">
           {description.length > 100 
             ? `${description.substring(0, 100)}...`
             : description
           }
         </p>
-        <div>
-          <span className="project-stipend">Project Fee: {projectFee} ETH</span>
-        </div>
-        <br />
-        <div className="button-gradient-wrapper">
-          <div className="button-inner-wrapper">
-            <button 
-              className="gradient-button" 
-              onClick={handleAcceptProject}
-              disabled={isLoading}
-            >
-              {isLoading ? "Accepting..." : "Accept Project"}
-            </button>
+        <div className="combiner">
+          <div>
+            <span className="project-stipend">Project Fee: {projectFee} ETH</span>
+          </div>
+          <br />
+          <div className="button-gradient-wrapper">
+            <div className="button-inner-wrapper">
+              <button 
+                className="gradient-button" 
+                onClick={handleAcceptProject}
+                disabled={isLoading}
+              >
+                {isLoading ? "Accepting..." : "Accept Project"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

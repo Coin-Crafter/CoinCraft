@@ -244,7 +244,7 @@ const fetchCompletedProjectsCount = async (freelancerWallet) => {
   // Helper function to validate image URL
   // Not necessary if we are using data URLs
   const isValidImageURL = (url) => {
-    return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+    return /\.(jpg|jpeg|png|gif|webp|JPG)$/i.test(url);
   };
 
   // Handle input change in the edit form (for text fields)
@@ -388,7 +388,7 @@ const fetchCompletedProjectsCount = async (freelancerWallet) => {
             <div className="modal-buttons">
               <button onClick={() => setIsEditModalOpen(true)}>Edit Profile</button>
               <button onClick={() => setIsProfileOpen(false)}>Close</button>
-              <button onClick={() => navigate("/users")}>Manage Users</button>
+              {/*<button onClick={() => navigate("/users")}>Manage Users</button>*/}
             </div>
           </div>
         </div>

@@ -4,6 +4,8 @@ import ProjectCard from "./ProjectCard"; // Import card component
 import "./listing.css"; // Import styles
 import ProjectManagerABI from "../../contract/contractABI.json";
 import { contractAddress } from "../../contract/contractAddress";
+import { db } from "../../firebase.jsx";
+import { doc, getDoc, collection, onSnapshot} from "firebase/firestore";
 
 function Listing() {
   const [projects, setProjects] = useState([]);
@@ -23,20 +25,37 @@ function Listing() {
         // Get contract instance
         const contract = new ethers.Contract(contractAddress, abi, signer);
 
+        const walletAddress = await signer.getAddress();
+
         // Fetch projects with status "Open"
         const statusOpen = 0n; // Enum value for "Open"
         const openProjects = await contract.getProjectsByStatus(statusOpen);
 
+
         // Map raw data into a readable format
-        const formattedProjects = openProjects.map((project) => ({
-          id: Number(project.id),
-          title: project.name,
-          description: project.description,
-          projectFee: ethers.formatUnits(project.projectFee || "0", "ether"),
-          creator: project.creator,
-        }));
+        // const formattedProjects = openProjects.map((project) => ({
+        //   id: Number(project.id),
+        //   title: project.name,
+        //   description: project.description,
+        //   projectFee: ethers.formatUnits(project.projectFee || "0", "ether"),
+        //   creator: project.creator,
+        // }));
+
+        const formattedProjects = openProjects
+        .filter((project) => !project.potentialFreelancers.includes(walletAddress))
+        .map((project) => {
+          return {
+            id: Number(project.id),
+            title: project.name,
+            description: project.description,
+            projectFee: ethers.formatUnits(project.projectFee || "0", "ether"),
+            creator: project.creator,
+          };
+        });
+      
 
         setProjects(formattedProjects);
+
       } catch (error) {
         console.error("Error fetching projects:", error);
       } finally {

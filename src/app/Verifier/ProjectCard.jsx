@@ -110,18 +110,25 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
             ? ethers.formatUnits(verificationFee, 18) 
             : 'Loading...'} ETH
         </span>
-        <br />
-        <span>Creator: {creator.slice(0, 6)}...{creator.slice(-4)}</span>
-        <br />
-        <span>Freelancer: {freelancer.slice(0, 6)}...{freelancer.slice(-4)}</span>
+        
 
-        <br /><br />
-        <span>Proof:
+        <br />
+        {/* <span>Proof:
           {" " + proofLink} 
           
+        </span> */}
+        
+        <span className="modal-prooflink">
+          Proof: <a 
+            href={proofLink.startsWith("http://") || proofLink.startsWith("https://") ? proofLink : `https://${proofLink}`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            {proofLink}
+          </a>
         </span>
+
       </div>
-      <br />
       <div className="button-container2">
         <div className="button-gradient-wrapper">
           <button 
@@ -129,7 +136,7 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
             onClick={() => handleVote(true)} 
             disabled={isVoting}
           >
-            {isVoting ? 'Processing...' : 'Accept Project'}
+            {isVoting ? 'Processing...' : 'Accept'}
           </button>
         </div>
         <div className="button-gradient-wrapper">
@@ -138,7 +145,7 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
             onClick={() => handleVote(false)} 
             disabled={isVoting}
           >
-            {isVoting ? 'Processing...' : 'Reject Project'}
+            {isVoting ? 'Processing...' : 'Reject'}
           </button>
         </div>
       </div>
@@ -160,20 +167,26 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
                   : 'Loading...'} ETH
               </span>
               <br />
-              <span>Creator: {creator.slice(0, 6)}...{creator.slice(-4)}</span>
-              <br />
-              <span>Freelancer: {freelancer.slice(0, 6)}...{freelancer.slice(-4)}</span>
-              <br />
-              <span>Proof: 
-                {proofLink ? (
-                  <a href={proofLink} target="_blank" rel="noopener noreferrer">
-                    View Proof
-                  </a>
-                ) : (
-                  "Not Provided"
-                )}
+              
+              {/* <span className="modal-prooflink">Proof: 
+                {" " + proofLink} 
+              </span> */}
+              {/* <span className="modal-prooflink">
+                Proof: <a href={proofLink} target="_blank" rel="noopener noreferrer">{proofLink}</a>
+              </span> */}
+              
+              <span className="modal-prooflink">
+                Proof: <a 
+                  href={proofLink.startsWith("http://") || proofLink.startsWith("https://") ? proofLink : `https://${proofLink}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  {proofLink}
+                </a>
               </span>
+
             </div>
+            <br></br>
             <button className="close-modal-button" onClick={toggleModal}>
               Close
             </button>
