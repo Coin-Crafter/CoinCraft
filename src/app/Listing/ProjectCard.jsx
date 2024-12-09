@@ -102,10 +102,10 @@ function ProjectCard({
             <span className="project-stipend">Project Fee: {projectFee} ETH</span>
           </div>
           <br />
-          <div className="button-gradient-wrapper">
-            <div className="button-inner-wrapper">
+          <div className="button-gradient-wrapper-2">
+            <div className="button-inner-wrapper-2">
               <button 
-                className="gradient-button" 
+                className="gradient-button-2" 
                 onClick={handleAcceptProject}
                 disabled={isLoading}
               >

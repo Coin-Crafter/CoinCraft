@@ -29,6 +29,19 @@ function getStatusString(statusCode) {
   }
 }
 
+function getStatus2String(status2Code) {
+  switch (status2Code) {
+    case 0n:
+      return "Incomplete";
+    case 1n:
+      return "Successful";
+    case 2n:
+      return "Unsuccessful";
+    default:
+      return "Unknown";
+  }
+}
+
 /**
  * Renders a styled span representing the project status.
  */
@@ -74,32 +87,19 @@ async function fetchUserProfile(walletAddress) {
 /**
  * Fetches the freelancer's name from Firestore.
  */
-async function fetchFreelancerName(walletAddress) {
-  if (!walletAddress || walletAddress === "0x0000000000000000000000000000000000000000") {
-    return "";
-  }
-
-  try {
-    const docRef = doc(db, "profiles", walletAddress.toLowerCase());
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return docSnap.data().name || "Unknown Freelancer";
-    } else {
-      return "Freelancer Not Found";
-    }
-  } catch (error) {
-    console.error("Error fetching freelancer name:", error);
-    return "Error Fetching Name";
-  }
-}
-
-/**
- * Fetches the full freelancer profile from Firestore.
- */
 async function fetchFreelancerProfile(walletAddress) {
-  if (!walletAddress || walletAddress === "0x0000000000000000000000000000000000000000") {
-    return {};
+  if (
+    !walletAddress ||
+    walletAddress === "0x0000000000000000000000000000000000000000"
+  ) {
+    return {
+      name: "",
+      description: "N/A",
+      githubLink: "N/A",
+      linkedinLink: "N/A",
+      projectsCompleted: 0,
+      address: walletAddress,
+    };
   }
 
   try {
@@ -108,22 +108,38 @@ async function fetchFreelancerProfile(walletAddress) {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
+
       return {
         name: data.name || "Unknown Freelancer",
+        description: data.description || "N/A",
+        githubLink: data.github || "N/A",
+        linkedinLink: data.linkedin || "N/A",
         projectsCompleted: data.projectsCompleted || 0,
-        description: data.description || "No description provided",
-        githubLink: data.githubLink || "",
-        linkedinLink: data.linkedinLink || "",
+        address: walletAddress,
       };
     } else {
-      console.error("Freelancer profile not found:", walletAddress);
-      return {};
+      return {
+        name: "Freelancer Not Found",
+        description: "N/A",
+        githubLink: "N/A",
+        linkedinLink: "N/A",
+        projectsCompleted: 0,
+        address: walletAddress,
+      };
     }
   } catch (error) {
     console.error("Error fetching freelancer profile:", error);
-    return {};
+    return {
+      name: "Error Fetching Profile",
+      description: "N/A",
+      githubLink: "N/A",
+      linkedinLink: "N/A",
+      projectsCompleted: 0,
+      address: walletAddress,
+    };
   }
 }
+
 
 
 /* ------------------------- Main Component ------------------------- */
@@ -188,43 +204,31 @@ const ProjectsPage = () => {
 
   const loadClientProjects = async (contract, walletAddress) => {
     const blockchainProjects = await contract.getProjectsByAddress(walletAddress);
-  
     const loadedProjects = await Promise.all(
       blockchainProjects.map(async (project) => {
-        if (project.status >= 0n && project.status <= 4n) {
-          const freelancers = project.potentialFreelancers || [];
-  
-          // Fetch freelancer profiles in parallel for better performance
-          const freelancerProfiles = await Promise.all(
-            freelancers.map(async (freelancerAddress) => {
-              const profile = await fetchFreelancerProfile(freelancerAddress);
-              return {
-                address: freelancerAddress,
-                ...profile,
-              };
+        const freelancerProfile = await fetchFreelancerProfile(project.selectedFreelancer);
+        return {
+          id: Number(project.id),
+          title: project.name,
+          description: project.description,
+          status: getStatusString(project.status),
+          status2: getStatus2String(project.status2),
+          projectFee: formatEther(project.projectFee),
+          proofLink: project.proofLink,
+          expanded: false,
+          potentialFreelancers: await Promise.all(
+            (project.potentialFreelancers || []).map(async (freelancerAddr) => {
+              const fProfile = await fetchFreelancerProfile(freelancerAddr);
+              return fProfile;
             })
-          );
-  
-          return {
-            id: Number(project.id),
-            title: project.name,
-            description: project.description,
-            status: getStatusString(project.status),
-            projectFee: formatEther(project.projectFee),
-            proofLink: project.proofLink,
-            expanded: false,
-            potentialFreelancers: freelancerProfiles, // Assign complete profiles
-            selectedFreelancer: {
-              address: project.selectedFreelancer,
-              ...(await fetchFreelancerProfile(project.selectedFreelancer)),
-            },
-          };
-        }
-        return null;
+          ),
+          selectedFreelancer: freelancerProfile,
+        };
       })
     );
-  
-    setClientProjects(loadedProjects.filter((project) => project !== null));
+
+    setClientProjects(loadedProjects);
+
   };
   
 
@@ -242,6 +246,7 @@ const ProjectsPage = () => {
         title: project.name,
         description: project.description,
         status: getStatusString(project.status),
+        status2: getStatus2String(project.status2),
         projectFee: formatEther(project.projectFee),
         expanded: false,
       }));
@@ -252,6 +257,7 @@ const ProjectsPage = () => {
       title: project.name,
       description: project.description,
       status: getStatusString(project.status),
+      status2: getStatus2String(project.status2),
       projectFee: formatEther(project.projectFee),
       expanded: false,
     }));
@@ -518,8 +524,8 @@ const ProjectsPage = () => {
                     project.status === "Waiting For Approval" && (
                       <div className="proof-section">
                         <h4>
-                          Proof of Completion:
-                          {project.proofLink ? (
+                          Proof of Completion:{" "}
+                          {" " + project.proofLink ? (
                             <a
                               href={project.proofLink}
                               target="_blank"
@@ -590,12 +596,14 @@ const ProjectsPage = () => {
                     project.potentialFreelancers.length > 0 && (
                       <div className="potential-freelancers">
                         <h4>Potential Freelancers:</h4>
+                        {/* {console.log("yo",project.potentialFreelancers)} */}
                         {project.potentialFreelancers.map(
                           (freelancer, index) => (
                             <div key={index}>
+                              {console.log("yo", freelancer.address, freelancer.name, freelancer, index)}
                               <FreelancerItem
-                                client={walletAddress}
-                                freelancer={freelancer}
+                                client={freelancer.address}
+                                freelancer={freelancer.address}
                                 projectId={project.id}
                                 handleSelectFreelancer={handleSelectFreelancer}
                                 isLoading={isLoading}
@@ -606,10 +614,18 @@ const ProjectsPage = () => {
                       </div>
                     )}
 
-                  {/* Client: Selected Freelancer details when In Progress or Completed */}
+
+                  {(activeTab === "client" || activeTab === "freelancer") && project.status === "Completed" && (
+                    <div className="final-outcome">
+                      <h4>Final Outcome: {project.status2}</h4>
+                    </div>
+                    
+                  )}
+
                   {activeTab === "client" &&
                     (project.status === "In Progress" ||
-                      project.status === "Completed" || project.status === "") && (
+                      project.status === "Completed" ||
+                      project.status === "") && (
                       <div className="potential-freelancers">
                         <h4>Selected Freelancer:</h4>
                         <div className="freelancer-item">
@@ -619,19 +635,19 @@ const ProjectsPage = () => {
                               Wallet: {project.selectedFreelancer.address}
                             </span>
                           </div>
-
                           <div className="freelancer-details">
-                            <div>
+                            {/* <div>
                               <strong>Projects Completed:</strong>{" "}
                               {project.selectedFreelancer.projectsCompleted}
-                            </div>
+                            </div> */}
                             <div>
                               <strong>Description:</strong>{" "}
                               {project.selectedFreelancer.description}
                             </div>
+                            <br></br> 
                             <div>
                               <strong>Github:</strong>{" "}
-                              {project.selectedFreelancer.githubLink ? (
+                              {project.selectedFreelancer.githubLink !== "N/A" ? (
                                 <a
                                   href={project.selectedFreelancer.githubLink}
                                   target="_blank"
@@ -645,7 +661,7 @@ const ProjectsPage = () => {
                             </div>
                             <div>
                               <strong>LinkedIn:</strong>{" "}
-                              {project.selectedFreelancer.linkedinLink ? (
+                              {project.selectedFreelancer.linkedinLink !== "N/A" ? (
                                 <a
                                   href={project.selectedFreelancer.linkedinLink}
                                   target="_blank"
@@ -657,7 +673,7 @@ const ProjectsPage = () => {
                                 "N/A"
                               )}
                             </div>
-                          </div>
+                          </div>            
                         </div>
                       </div>
                     )}

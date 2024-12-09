@@ -79,11 +79,11 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
       } catch (error) {
         console.error("Transaction error:", error);
         alert(`Error: ${error.message}`);
+        setIsVoting(false);
       }
     } catch (error) {
       console.error("Error voting:", error);
       alert("Error voting. Please try again.");
-    } finally {
       setIsVoting(false);
     }
   };
@@ -111,13 +111,6 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
             : 'Loading...'} ETH
         </span>
         
-
-        <br />
-        {/* <span>Proof:
-          {" " + proofLink} 
-          
-        </span> */}
-        
         <span className="modal-prooflink">
           Proof: <a 
             href={proofLink.startsWith("http://") || proofLink.startsWith("https://") ? proofLink : `https://${proofLink}`} 
@@ -127,72 +120,81 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
             {proofLink}
           </a>
         </span>
+      </div>
 
-      </div>
-      <div className="button-container2">
-        <div className="button-gradient-wrapper">
-          <button 
-            className="gradient-button accept" 
-            onClick={() => handleVote(true)} 
-            disabled={isVoting}
-          >
-            {isVoting ? 'Processing...' : 'Accept'}
-          </button>
-        </div>
-        <div className="button-gradient-wrapper">
-          <button 
-            className="gradient-button reject" 
-            onClick={() => handleVote(false)} 
-            disabled={isVoting}
-          >
-            {isVoting ? 'Processing...' : 'Reject'}
-          </button>
-        </div>
-      </div>
-      </div>
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={toggleModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <img
-              src={creatorProfilePic}
-              alt="Project Creator"
-              className="modal-project-logo"
-            />
-            <h2 className="project-title">{title}</h2>
-            <p className="modal-project-description">{description}</p>
-            <div>
-              <span className="project-stipend">
-                Verification Fee: {verificationFee 
-                  ? ethers.formatUnits(verificationFee, 18) 
-                  : 'Loading...'} ETH
-              </span>
-              <br />
-              
-              {/* <span className="modal-prooflink">Proof: 
-                {" " + proofLink} 
-              </span> */}
-              {/* <span className="modal-prooflink">
-                Proof: <a href={proofLink} target="_blank" rel="noopener noreferrer">{proofLink}</a>
-              </span> */}
-              
-              <span className="modal-prooflink">
-                Proof: <a 
-                  href={proofLink.startsWith("http://") || proofLink.startsWith("https://") ? proofLink : `https://${proofLink}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  {proofLink}
-                </a>
-              </span>
-
-            </div>
-            <br></br>
-            <button className="close-modal-button" onClick={toggleModal}>
-              Close
+      {/* Conditionally render buttons based on voting state */}
+      {!isVoting ? (
+        <div className="button-container2">
+          <div className="button-gradient-wrapper verifier">
+            <button 
+              className="gradient-button accept" 
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent modal from opening
+                handleVote(true);
+              }} 
+            >
+              Accept
+            </button>
+          </div>
+          <div className="button-gradient-wrapper">
+            <button 
+              className="gradient-button reject" 
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent modal from opening
+                handleVote(false);
+              }} 
+            >
+              Reject
             </button>
           </div>
         </div>
+      ) : (
+        <div className="button-container2 processing-state">
+          <button 
+            className="gradient-button processing" 
+            disabled
+          >
+            Processing Vote...
+          </button>
+        </div>
       )}
+    </div>
+    {/* Rest of the modal code remains the same */}
+    {isModalOpen && (
+      <div className="modal-overlay" onClick={toggleModal}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <img
+            src={creatorProfilePic}
+            alt="Project Creator"
+            className="modal-project-logo"
+          />
+          <h2 className="project-title">{title}</h2>
+          <p className="modal-project-description">{description}</p>
+          <div>
+            <span className="project-stipend">
+              Verification Fee: {verificationFee 
+                ? ethers.formatUnits(verificationFee, 18) 
+                : 'Loading...'} ETH
+            </span>
+            <br />
+            
+            <span className="modal-prooflink">
+              Proof: <a 
+                href={proofLink.startsWith("http://") || proofLink.startsWith("https://") ? proofLink : `https://${proofLink}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                {proofLink}
+              </a>
+            </span>
+          </div>
+          <br></br>
+          <button className="close-modal-button" onClick={toggleModal}>
+            Close
+          </button>
+        </div>
+      </div>
+    )}
     </>
   );
 }

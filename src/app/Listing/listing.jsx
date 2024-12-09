@@ -53,7 +53,6 @@ function Listing() {
           };
         });
       
-
         setProjects(formattedProjects);
 
       } catch (error) {

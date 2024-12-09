@@ -311,6 +311,11 @@
             "internalType": "string",
             "name": "proofLink",
             "type": "string"
+          },
+          {
+            "internalType": "enum ProjectManager.Status2",
+            "name": "status2",
+            "type": "uint8"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -392,6 +397,11 @@
             "internalType": "string",
             "name": "proofLink",
             "type": "string"
+          },
+          {
+            "internalType": "enum ProjectManager.Status2",
+            "name": "status2",
+            "type": "uint8"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -473,6 +483,11 @@
             "internalType": "string",
             "name": "proofLink",
             "type": "string"
+          },
+          {
+            "internalType": "enum ProjectManager.Status2",
+            "name": "status2",
+            "type": "uint8"
           }
         ],
         "internalType": "struct ProjectManager.Project[]",
@@ -613,6 +628,11 @@
         "internalType": "string",
         "name": "proofLink",
         "type": "string"
+      },
+      {
+        "internalType": "enum ProjectManager.Status2",
+        "name": "status2",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",

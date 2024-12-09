@@ -48,7 +48,7 @@
 }
 
 /* Gradient Button Wrapper */
-.button-gradient-wrapper {
+.button-gradient-wrapper-3 {
   display: inline-block; /* Wrap tightly around content */
   border-radius: 40px; /* Rounded gradient border */
   padding: 2px; /* Border thickness */
@@ -61,7 +61,7 @@
   );
 }
 
-.button-solid-wrapper {
+.button-solid-wrapper-3 {
   display: inline-block; /* Wrap tightly around content */
   border-radius: 40px; /* Rounded gradient border */
   padding: 2px; /* Border thickness */
@@ -69,13 +69,13 @@
 }
 
 /* Inner Button Wrapper */
-.button-inner-wrapper {
+.button-inner-wrapper-3 {
   border-radius: 40px;
   overflow: hidden; /* Ensure button respects border radius */
 }
 
 /* Gradient Button */
-.gradient-button {
+.gradient-button-3{
   color: #fff;
   padding: 17px 40px;
   background: #000; /* Black inner background */
@@ -87,7 +87,7 @@
   transition: transform 0.2s, box-shadow 0.3s;
 }
 
-.gradient-button:hover {
+.gradient-button-3:hover {
   transform: scale(1.05);
   box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.3); /* Subtle glow */
 }

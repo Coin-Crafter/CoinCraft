@@ -10,6 +10,12 @@ contract ProjectManager {
         Completed
     }
 
+    enum Status2 {
+        Incomplete,   
+        Successful,
+        Unsuccessful
+    }
+
     struct Project {
         uint256 id;
         string name;
@@ -24,6 +30,7 @@ contract ProjectManager {
         uint256 acceptVotes;
         uint256 rejectVotes;
         string proofLink;
+        Status2 status2;
     }
 
     Project[] public projects;
@@ -93,16 +100,11 @@ contract ProjectManager {
         require(_projectId < projects.length, "Project does not exist");
         Project storage project = projects[_projectId];
 
-        require(
-            msg.sender == project.creator,
-            "Only the project creator can approve completion"
-        );
-        require(
-            project.status == Status.WaitingForApproval,
-            "Project must be waiting for approval"
-        );
+        require(msg.sender == project.creator, "Only the project creator can approve");
+        require(project.status == Status.WaitingForApproval, "Project must be waiting for approval");
 
         project.status = Status.Completed;
+        project.status2 = Status2.Successful;
 
         (bool success, ) = payable(project.selectedFreelancer).call{
             value: project.projectFee + verificationFee
@@ -110,30 +112,19 @@ contract ProjectManager {
         require(success, "Fee transfer to freelancer failed");
 
         // Return verification fee to client
-        (bool successClient, ) = payable(project.creator).call{
-            value: verificationFee
-        }("");
+        (bool successClient, ) = payable(project.creator).call{value: verificationFee}("");
         require(successClient, "Verification fee refund to client failed");
 
-        emit ProjectStatusUpdated(
-            _projectId,
-            Status.WaitingForApproval,
-            Status.Completed
-        );
+        emit ProjectStatusUpdated(_projectId, Status.WaitingForApproval, Status.Completed);
     }
 
     function disputeProjectCompletion(uint256 _projectId) public {
         require(_projectId < projects.length, "Project does not exist");
         Project storage project = projects[_projectId];
 
-        require(
-            msg.sender == project.creator,
-            "Only the project creator can dispute completion"
-        );
-        require(
-            project.status == Status.WaitingForApproval,
-            "Project must be waiting for approval"
-        );
+        require(msg.sender == project.creator, "Only the project creator can dispute");
+        require(project.status == Status.WaitingForApproval, "Project must be waiting for approval");
+
         project.status = Status.InDispute;
         project.acceptVotes = 0;
         project.rejectVotes = 0;
@@ -144,32 +135,19 @@ contract ProjectManager {
 
         delete projectVerifiers[_projectId];
 
-        emit ProjectStatusUpdated(
-            _projectId,
-            Status.WaitingForApproval,
-            Status.InDispute
-        );
+        emit ProjectStatusUpdated(_projectId, Status.WaitingForApproval, Status.InDispute);
     }
 
-    function verifyProjectCompletion(
-        uint256 _projectId,
-        bool _accept
-    ) public payable onlyValidProject(_projectId) {
+    function verifyProjectCompletion(uint256 _projectId, bool _accept) public payable {
+        require(_projectId < projects.length, "Project does not exist");
         Project storage project = projects[_projectId];
 
         require(
-            msg.sender != project.creator &&
-                msg.sender != project.selectedFreelancer,
+            msg.sender != project.creator && msg.sender != project.selectedFreelancer,
             "Verifier cannot be project creator or freelancer"
         );
-        require(
-            project.status == Status.InDispute,
-            "Project must be in dispute"
-        );
-        require(
-            !hasVerified[_projectId][msg.sender],
-            "Verifier has already voted"
-        );
+        require(project.status == Status.InDispute, "Project must be in dispute");
+        require(!hasVerified[_projectId][msg.sender], "Verifier has already voted");
         require(msg.value == verificationFee, "Incorrect verification fee");
 
         hasVerified[_projectId][msg.sender] = true;
@@ -191,9 +169,11 @@ contract ProjectManager {
 
         if (projectVerifiers[_projectId].length == REQUIRED_VERIFIERS) {
             if (project.acceptVotes >= 2) {
+                // Majority accepts
                 completeProject(_projectId);
             } else if (project.rejectVotes >= 2) {
-                reopenProject(_projectId);
+                // Majority rejects
+                completeProjectUnsuccessful(_projectId);
             }
         }
     }
@@ -201,17 +181,29 @@ contract ProjectManager {
     function completeProject(uint256 _projectId) private {
         Project storage project = projects[_projectId];
         project.status = Status.Completed;
+        project.status2 = Status2.Successful;
 
         (bool freelancerPaid, ) = payable(project.selectedFreelancer).call{
             value: project.projectFee + verificationFee
         }("");
         require(freelancerPaid, "Freelancer payment failed");
 
-        emit ProjectStatusUpdated(
-            _projectId,
-            Status.InDispute,
-            Status.Completed
-        );
+        emit ProjectStatusUpdated(_projectId, Status.InDispute, Status.Completed);
+    }
+
+    // New function to mark project as completed but unsuccessful
+    function completeProjectUnsuccessful(uint256 _projectId) private {
+        Project storage project = projects[_projectId];
+        project.status = Status.Completed;
+        project.status2 = Status2.Unsuccessful;
+
+        // Since the project is unsuccessful, refund the client
+        (bool clientRefund, ) = payable(project.creator).call{
+            value: project.projectFee + verificationFee
+        }("");
+        require(clientRefund, "Client refund failed");
+
+        emit ProjectStatusUpdated(_projectId, Status.InDispute, Status.Completed);
     }
 
     function reopenProject(uint256 _projectId) private {
@@ -257,10 +249,7 @@ contract ProjectManager {
         require(bytes(_name).length > 0, "Project name cannot be empty");
         require(bytes(_description).length > 0, "Project description cannot be empty");
         require(_projectFee > 0, "Project fee must be greater than zero");
-        require(
-            msg.value == _projectFee + verificationFee,
-            "Incorrect ETH sent"
-        );
+        require(msg.value == _projectFee + verificationFee, "Incorrect ETH sent");
 
         uint256 projectId = projects.length;
 
@@ -272,23 +261,17 @@ contract ProjectManager {
                 _timestamp,
                 msg.sender,
                 new address[](0),
-                address(0), 
+                address(0),
                 Status.Open,
                 _projectFee,
                 0,
                 0,
-                ""
+                "",
+                Status2.Incomplete
             )
         );
-        emit ProjectCreated(
-            projectId,
-            _name,
-            _description,
-            _timestamp,
-            msg.sender,
-            Status.Open,
-            _projectFee
-        );
+
+        emit ProjectCreated(projectId, _name, _description, _timestamp, msg.sender, Status.Open, _projectFee);
     }
 
     function acceptProject(

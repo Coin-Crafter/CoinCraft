@@ -14,9 +14,9 @@ const Content = () => (
     </div> */}
     <div className="content-buttons">
       {/* Button with Gradient Border */}
-      <div className="button-gradient-wrapper">
-        <div className="button-inner-wrapper">
-          <button className="gradient-button"><Link to={"/your-projects"} className="link">Post a Project</Link></button>
+      <div className="button-gradient-wrapper-3">
+        <div className="button-inner-wrapper-3">
+          <button className="gradient-button-3"><Link to={"/your-projects"} className="link">Post a Project</Link></button>
         </div>
       </div>
 
@@ -27,9 +27,9 @@ const Content = () => (
         </div>
       </div> */}
 
-      <div className="button-solid-wrapper">
-        <div className="button-inner-wrapper">
-          <button className="gradient-button"><Link to={"/project-listing"} className="link">Find a Project</Link></button>
+      <div className="button-solid-wrapper-3">
+        <div className="button-inner-wrapper-3">
+          <button className="gradient-button-3"><Link to={"/project-listing"} className="link">Find a Project</Link></button>
         </div>
       </div>
     </div>
