@@ -21,7 +21,8 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
         const contract = new ethers.Contract(contractAddress, ProjectManagerABI, provider);
         
         const fee = await contract.verificationFee();
-        setVerificationFee(fee);
+        const reducedFee = fee / 3n;
+        setVerificationFee(reducedFee);
       } catch (error) {
         console.error("Error fetching verification fee:", error);
       }
