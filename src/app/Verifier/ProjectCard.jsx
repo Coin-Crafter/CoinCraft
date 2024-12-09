@@ -76,6 +76,7 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
         await tx.wait();
         
         alert(accept ? "Project vote submitted to ACCEPT" : "Project vote submitted to REJECT");
+        setIsVoting(false);
       } catch (error) {
         console.error("Transaction error:", error);
         alert(`Error: ${error.message}`);

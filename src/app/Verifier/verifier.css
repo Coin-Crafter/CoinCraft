@@ -114,30 +114,58 @@ body {
 
 .gradient-button {
   width: 100%;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    transform-origin: center;
-    position: relative;
-    overflow: hidden;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  transform-origin: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .gradient-button.accept{
+  width: 100%;
+  /* Adjust the width as needed, e.g., 90% of the parent container */
+  max-width: 300px;
+  /* Optional: set a maximum width */
+  padding: 15px 25px;
+  /* Increase padding for a larger button */
+  border: none;
   border-radius: 25px;
+  font-size: 1rem;
+  /* Slightly larger font size for better visibility */
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  color: #fff;
+  background: #000;
 }
 
 .gradient-button.reject {
+  width: 100%;
+  /* Adjust the width as needed, e.g., 90% of the parent container */
+  max-width: 300px;
+  /* Optional: set a maximum width */
+  padding: 15px 25px;
+  /* Increase padding for a larger button */
+  border: none;
   border-radius: 25px;
+  font-size: 1rem;
+  /* Slightly larger font size for better visibility */
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  color: #fff;
+  background: #000;
 }
 .verifier{
   width: 50%;
 }
 .gradient-button:hover {
-  transform: scale(1.01);
+  transform: scale(1);
   opacity: 1;
 }
 
@@ -149,10 +177,10 @@ body {
   width: 100%;
 }
 .accept-project-link {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-    transition: color 0.2s;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.2s;
 }
 
 .accept-project-link:hover {
@@ -272,6 +300,15 @@ body {
   }
 
     .button-gradient-wrapper {
+      border-radius: 40px;
+        /* Rounded gradient border */
+        padding: 2px;
+        /* Border thickness */
+        background: linear-gradient(to right,
+            #ff3bff 0%,
+            #ecbfbf 38%,
+            #5c24ff 76%,
+            #d94fd5 100%);
       width: 50%;
       transition: all 0.3s ease;
     }
