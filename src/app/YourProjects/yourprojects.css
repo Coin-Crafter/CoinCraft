@@ -408,14 +408,14 @@
 
 /* Freelancer Details */
 .freelancer-details {
-  display: grid;
+  display: auto;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
   color: #d3d3d3;
 }
 
 .freelancer-details div {
-  display: flex;
+  display: auto;
   align-items: center;
   gap: 8px;
 }
@@ -516,4 +516,13 @@
 .mark-completed-button:active {
   transform: translateY(0);
   box-shadow: none;
+}
+
+.description-freelancer {
+  width : 100%;
+}
+
+.other-freelancer-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }

@@ -76,28 +76,31 @@ function FreelancerItem({ client, freelancer, projectId, handleSelectFreelancer,
             {/* <div>
               <strong>Projects Completed:</strong> {freelancerProfile?.projectsCompleted || 0}
             </div> */}
-            <div>
+            <div className="description-freelancer">
               <strong>Description:</strong> {freelancerProfile?.description || "N/A"}
-            </div>
-            <div>
-              <strong>Github:</strong>
-              {freelancerProfile?.githubLink ? (
-                <a href={freelancerProfile.githubLink} target="_blank" rel="noopener noreferrer">
-                  View
-                </a>
-              ) : (
-                "N/A"
-              )}
-            </div>
-            <div>
-              <strong>LinkedIn:</strong>
-              {freelancerProfile?.linkedinLink ? (
-                <a href={freelancerProfile.linkedinLink} target="_blank" rel="noopener noreferrer">
-                  View
-                </a>
-              ) : (
-                "N/A"
-              )}
+              </div>
+              <br/>
+            <div className="other-freelancer-details">
+              <div>
+                <strong>Github: </strong>
+                {freelancerProfile?.githubLink ? (
+                  <a href={freelancerProfile.githubLink} target="_blank" rel="noopener noreferrer">
+                    View
+                  </a>
+                ) : (
+                  "N/A"
+                )}
+              </div>
+              <div>
+                <strong>LinkedIn: </strong>
+                {freelancerProfile?.linkedinLink ? (
+                  <a href={freelancerProfile.linkedinLink} target="_blank" rel="noopener noreferrer">
+                    View
+                  </a>
+                ) : (
+                  "N/A"
+                )}
+              </div>
             </div>
           </div>
 
