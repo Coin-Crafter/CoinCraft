@@ -644,7 +644,7 @@ const ProjectsPage = () => {
                               <strong>Description:</strong>{" "}
                               {project.selectedFreelancer.description}
                             </div>
-                            <br></br> 
+                            <br></br>
                             <div>
                               <strong>Github:</strong>{" "}
                               {project.selectedFreelancer.githubLink !== "N/A" ? (
