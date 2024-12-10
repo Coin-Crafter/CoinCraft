@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("ProjectManager Contract", function () {
@@ -24,52 +23,59 @@ describe("ProjectManager Contract", function () {
     await projectManager.waitForDeployment();
   });
 
-  describe("Project Creation", () => {
-    it("should create a project with correct values", async () => {
-      const projectFee = ethers.parseEther("1");
-      const totalValue = projectFee + verificationFee;
+    describe("Project Creation", () => {
+        it("should create a project with correct values", async () => {
+            const projectFee = ethers.parseEther("1");
+            const totalValue = projectFee + verificationFee;
 
-      const tx = await projectManager
-        .connect(creator)
-        .createProject(
-          "Test Project",
-          "A sample project",
-          Math.floor(Date.now() / 1000),
-          projectFee,
-          { value: totalValue }
-        );
-      const receipt = await tx.wait();
+            const tx = await projectManager
+                .connect(creator)
+                .createProject(
+                    "Test Project",
+                    "A sample project",
+                    Math.floor(Date.now() / 1000),
+                    projectFee,
+                    { value: totalValue }
+                );
+            const receipt = await tx.wait();
 
-      const event = receipt.events.find((e) => e.event === "ProjectCreated");
-      assert.exists(event);
+            const event = receipt.logs.find(
+                (log) => log.address === projectManager.target && log.topics[0] === projectManager.interface.getEvent("ProjectCreated").topicHash
+              );
+              
+      
+            assert.exists(event);
 
-      const projects = await projectManager.getProjectsByAddress(creator.address);
-      assert.lengthOf(projects, 1);
+            const projects = await projectManager.getProjectsByAddress(creator.address);
+            assert.lengthOf(projects, 1);
 
-      const project = projects[0];
-      assert.equal(project.name, "Test Project");
-      assert.equal(project.description, "A sample project");
-      assert.equal(project.projectFee, projectFee);
-      assert.equal(project.creator, creator.address);
+            const project = projects[0];
+            assert.equal(project.name, "Test Project");
+            assert.equal(project.description, "A sample project");
+            assert.equal(project.projectFee, projectFee);
+            assert.equal(project.creator, creator.address);
+        });
+
+        it("should revert if incorrect ETH is sent", async () => {
+            const projectFee = ethers.parseEther("1");
+      
+            try {
+                await projectManager
+                    .connect(creator)
+                    .createProject(
+                        "Invalid Project",
+                        "Description",
+                        Math.floor(Date.now() / 1000),
+                        projectFee,
+                        { value: ethers.parseEther("0.5") }
+                    );
+                assert.fail("The transaction should have reverted.");
+            } catch (error) {
+                assert.include(error.message, "Incorrect ETH sent", "Revert reason should match");
+            }
+        });
     });
-
-    it("should revert if incorrect ETH is sent", async () => {
-        const projectFee = ethers.parseEther("1");
-    
-        await assert.isRejected(
-          projectManager
-            .connect(creator)
-            .createProject(
-              "Invalid Project",
-              "Description",
-              Math.floor(Date.now() / 1000),
-              projectFee,
-              { value: projectFee }
-            ),
-          /Incorrect ETH sent/
-        );
-      });
-    });
+      
 
   describe("Accepting and Selecting a Freelancer", () => {
     let projectFee, totalValue, projectId;
