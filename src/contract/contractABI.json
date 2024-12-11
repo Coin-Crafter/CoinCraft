@@ -59,9 +59,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "projectFee",
-        "type": "uint256"
+        "type": "uint64"
       }
     ],
     "name": "ProjectCreated",
@@ -141,9 +141,9 @@
     "name": "REQUIRED_VERIFIERS",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
@@ -193,9 +193,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "_projectFee",
-        "type": "uint256"
+        "type": "uint64"
       }
     ],
     "name": "createProject",
@@ -293,19 +293,19 @@
             "type": "uint8"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "projectFee",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "acceptVotes",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "rejectVotes",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
             "internalType": "string",
@@ -379,19 +379,19 @@
             "type": "uint8"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "projectFee",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "acceptVotes",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "rejectVotes",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
             "internalType": "string",
@@ -465,19 +465,19 @@
             "type": "uint8"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "projectFee",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "acceptVotes",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint64",
             "name": "rejectVotes",
-            "type": "uint256"
+            "type": "uint64"
           },
           {
             "internalType": "string",
@@ -610,19 +610,19 @@
         "type": "uint8"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "projectFee",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "acceptVotes",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "rejectVotes",
-        "type": "uint256"
+        "type": "uint64"
       },
       {
         "internalType": "string",

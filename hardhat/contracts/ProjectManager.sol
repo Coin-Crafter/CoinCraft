@@ -26,15 +26,15 @@ contract ProjectManager {
         address[] potentialFreelancers;
         address selectedFreelancer;
         Status status;
-        uint256 projectFee;
-        uint256 acceptVotes;
-        uint256 rejectVotes;
+        uint64 projectFee;
+        uint64 acceptVotes;
+        uint64 rejectVotes;
         string proofLink;
         Status2 status2;
     }
 
     Project[] public projects;
-    uint256 public constant REQUIRED_VERIFIERS = 3;
+    uint64 public constant REQUIRED_VERIFIERS = 3;
     uint256 public verificationFee = 0.0003 ether;
 
     event ProjectCreated(
@@ -44,7 +44,7 @@ contract ProjectManager {
         uint256 timestamp,
         address creator,
         Status status,
-        uint256 projectFee
+        uint64 projectFee
     );
 
     event ProjectRemoved(uint256 projectId, address creator);
@@ -244,7 +244,7 @@ contract ProjectManager {
         string memory _name,
         string memory _description,
         uint256 _timestamp,
-        uint256 _projectFee
+        uint64 _projectFee
     ) public payable {
         require(bytes(_name).length > 0, "Project name cannot be empty");
         require(bytes(_description).length > 0, "Project description cannot be empty");
