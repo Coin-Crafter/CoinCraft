@@ -260,15 +260,10 @@ describe("ProjectManager Contract", function () {
     });
   });
 
-  /**
-   * Code added below to extract more data (project details, balances, addresses) after each test
-   * and display them in a final report. We do not modify existing tests.
-   */
 
   const testResults = [];
   let collectedAddresses;
   
-  // Store addresses in a global object for final reporting
   after(async function() {
     collectedAddresses = {
       Creator: creator.address,
@@ -291,7 +286,6 @@ describe("ProjectManager Contract", function () {
         duration: this.currentTest.duration,
       };
 
-      // Gather balances of key accounts and contract
       const addresses = [
         { name: "Creator", address: creator.address },
         { name: "Freelancer1", address: freelancer1.address },
@@ -310,7 +304,6 @@ describe("ProjectManager Contract", function () {
       }
       testData.balances = balances;
 
-      // Gather project details for creator
       const creatorProjects = await projectManager.getProjectsByAddress(creator.address);
       const projectDetails = creatorProjects.map(p => ({
         id: p.id.toString(),
@@ -320,12 +313,12 @@ describe("ProjectManager Contract", function () {
         creator: p.creator,
         potentialFreelancers: p.potentialFreelancers,
         selectedFreelancer: p.selectedFreelancer,
-        status: p.status, // numeric enum value
+        status: p.status, 
         projectFee: p.projectFee.toString(),
         acceptVotes: p.acceptVotes.toString(),
         rejectVotes: p.rejectVotes.toString(),
         proofLink: p.proofLink,
-        status2: p.status2 // numeric enum value
+        status2: p.status2 
       }));
 
       testData.projects = projectDetails;
