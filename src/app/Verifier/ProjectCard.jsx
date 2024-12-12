@@ -104,7 +104,7 @@ function VerifierProjectCard({ projectId, title, description, projectFee, creato
       />
       <h2 className="project-title">{title}</h2>
       <p className="project-description">
-          {description.length > 100 ? `${description.substring(0, 100)}...` : description}
+          {description.length > 100 ? `${description.substring(0, 30)}...` : description}
       </p>
       <div>
         <span className="project-stipend">
